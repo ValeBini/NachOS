@@ -1,12 +1,10 @@
-1)
-// mmu.hh
-
-MEMORY_SIZE = NUM_PHYS_PAGES * PAGE_SIZE;
-
-PAGE_SIZE = SECTOR_SIZE;
-
-NUM_PHYS_PAGES = 32;
-
+## 1) 
+_// mmu.hh
+<p>
+_MEMORY_SIZE = NUM_PHYS_PAGES * PAGE_SIZE;
+_PAGE_SIZE = SECTOR_SIZE;
+_NUM_PHYS_PAGES = 32;
+</p>
 // disk.hh
 
 SECTOR_SIZE = 128;
