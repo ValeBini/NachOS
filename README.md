@@ -2,7 +2,7 @@
 _// mmu.hh
 <p>
 _MEMORY_SIZE = NUM_PHYS_PAGES * PAGE_SIZE;
-_PAGE_SIZE = SECTOR_SIZE;
+PAGE_SIZE = SECTOR_SIZE;
 _NUM_PHYS_PAGES = 32;
 </p>
 // disk.hh
@@ -10,6 +10,8 @@ _NUM_PHYS_PAGES = 32;
 SECTOR_SIZE = 128;
 
 32*128 = 4096
+
+
 
 
 2) Aumentando la cantidad de paginas fisicas o el tamaño de las paginas.
