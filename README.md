@@ -140,9 +140,9 @@ En caso de que no haya overflow, guarda el resultado en el registro correspondie
 
 
 ## Ejecticio 6:
-Primer Nivel:
+### Primer Nivel:
 
-En main:
+#### En main:
 
 1. Initialize: implementado en /code/threads/system.cc
 2. DEBUG: definido en /code/lib/utility.hh
@@ -152,9 +152,9 @@ En main:
 6. Thread::Finish: implementado en /code/threads/thread.cc
 
 
-Segundo Nivel:
+### Segundo Nivel:
 
-En Initialize:
+#### En Initialize:
 
 1. ASSERT: definido en /code/lib/utility.hh
 2. strcmp: implementado en string.h
@@ -170,17 +170,17 @@ En Initialize:
 12. PreemptiveScheduler::SetUp: implementado en /code/threads/preemptive.cc
 
 
-En DEBUG: 
+#### En DEBUG: 
 
 1. Debug::Print: implementado en /code/lib/debug.cc
 
 
-En PrintVersion:
+#### En PrintVersion:
 
 1. pirntf: implementado en stdio.h
 
 
-En ThreadTest:
+#### En ThreadTest:
 
 1. DEBUG: definido en /code/lib/utility.hh
 2. strncpy: implementado en string.h
@@ -189,7 +189,7 @@ En ThreadTest:
 5. SimpleThread: implementado en /code/threads/thread_test.cc
 
 
-En Thread::Finish:
+#### En Thread::Finish:
 
 1. Interrupt::SetLevel: implementado en /code/machine/interrupt.cc
 2. ASSERT: definido en /code/lib/utility.hh
@@ -198,7 +198,26 @@ En Thread::Finish:
 5. Thread::Sleep: implementado en /code/threads/thread.cc
 
 ## Ejecticio 7:
+
+Son varias las razones por las que se prefiere emular una CPU en lugar de usar la existente. 
+
+La primera es que el núcleo que estamos construyendo requiere un control completo del manejo de la memoria y de las interrupciones y excepciones (incluyendo las llamadas al sistema). Si usáramos la CPU existente, no tendríamos este acceso ya que tendríamos como intermediario el sistema operativo de nuestra computadora.
+
+Por otro lado, si usáramos la PC real, nuestro núcleo debería poder compilarse en cualquier arquitectura. De lo contrario, no podríamos correrlo en cualquier computadora. Usando la máquina virtual, hacemos el núcleo para la arquitectura que esta posee y podemos correrlo en cualquier PC.
+
+Por último, usar la CPU emulada facilita el testeo del código con GDB.
+
 ## Ejecticio 8:
+
+### ASSERT:
+
+ASSERT toma una condición y la checkea. Si esta es verdadera, no hace nada y sigue el flujo normal del programa. Si falla, avisa por pantalla que falló un assert, muestra la expresión y en qué archivo y línea se encuentra, y finalmente interrumpe la ejecución. Sirve para asegurar que se cumplan las condiciones que deberían darse para realizar cierta acción.
+
+
+### DEBUG:
+
+DEBUG llama al método Debug::Print. Este toma una bandera, un puntero al formato de lo que se desea imprimir y los argumentos que se van a imprimir. Si la bandera está habilitada (se habilitan cuando se llama al programa), entonces imprime el mensaje que se pasó por argumento. Sirve para que nosotros elijamos qué información queremos que nos muestre durante la ejecución utilizando las diferentes banderas.
+
 ## Ejecticio 9:
 ## Ejecticio 10:
 ## Ejecticio 11:
