@@ -219,7 +219,29 @@ ASSERT toma una condición y la checkea. Si esta es verdadera, no hace nada y si
 DEBUG llama al método Debug::Print. Este toma una bandera, un puntero al formato de lo que se desea imprimir y los argumentos que se van a imprimir. Si la bandera está habilitada (se habilitan cuando se llama al programa), entonces imprime el mensaje que se pasó por argumento. Sirve para que nosotros elijamos qué información queremos que nos muestre durante la ejecución utilizando las diferentes banderas.
 
 ## Ejecticio 9:
-alv
+
+The pre-defined debugging flags are:
+Las banderas de depuracion predefinidas son:
+
+ * `+` :  Habilita todos los mensajes de depuracion.
+
+ * `t` :  Mensajes del sistema de threads.
+
+ * `s` :  Mensajes de semaforos, locks y condiciones.
+
+ * `i` :  Mensajes de la simulacion de interrupciones.
+
+ * `m` :  Mensajes de la simulacion de la maquina (requiere *USER_PROGRAM*).
+
+ * `d` :  Mensajes de la simulacion del disco (requiere *FILESYS*).
+
+ * `f` :  Mensajes sobre el sistema de archivos (requiere *FILESYS*).
+
+ * `a` :  Mensajes sobre los espacios de direcciones (requiere *USER_PROGRAM*).
+
+ * `n` :  Mensajes de la simulacion de red (requiere *NETWORK*).
+
+
 ## Ejecticio 10:
 
 Las constantes estan definidas en los distintos Makefile para incluir distintos modulos.
