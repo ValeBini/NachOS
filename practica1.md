@@ -220,32 +220,31 @@ DEBUG llama al método Debug::Print. Este toma una bandera, un puntero al format
 
 ## Ejecticio 9:
 
-The pre-defined debugging flags are:
-Las banderas de depuracion predefinidas son:
+Las banderas de depuración predefinidas son:
 
- * `+` :  Habilita todos los mensajes de depuracion.
+ * `+` :  Habilita todos los mensajes de depuración.
 
  * `t` :  Mensajes del sistema de threads.
 
- * `s` :  Mensajes de semaforos, locks y condiciones.
+ * `s` :  Mensajes de semáforos, locks y condiciones.
 
- * `i` :  Mensajes de la simulacion de interrupciones.
+ * `i` :  Mensajes de la simulación de interrupciones.
 
- * `m` :  Mensajes de la simulacion de la maquina (requiere *USER_PROGRAM*).
+ * `m` :  Mensajes de la simulación de la máquina (requiere *USER_PROGRAM*).
 
- * `d` :  Mensajes de la simulacion del disco (requiere *FILESYS*).
+ * `d` :  Mensajes de la simulación del disco (requiere *FILESYS*).
 
  * `f` :  Mensajes sobre el sistema de archivos (requiere *FILESYS*).
 
  * `a` :  Mensajes sobre los espacios de direcciones (requiere *USER_PROGRAM*).
 
- * `n` :  Mensajes de la simulacion de red (requiere *NETWORK*).
+ * `n` :  Mensajes de la simulación de red (requiere *NETWORK*).
 
 
 ## Ejecticio 10:
 
-Las constantes estan definidas en los distintos Makefile para incluir distintos modulos.
-Marcamos con un *X* en los cuales se incluyen:
+Las constantes estan definidas en los distintos Makefile para incluir distintos módulos.
+Marcamos con una *X* en los que se incluyen:
 
 |   	    |  USER_PROGRAM 	| FILESYS_NEEDED  	|  FILESYS_STUB |  NETWORK 	|
 |:-:	    |:-:	            |:-:	            |:-:        	|:-:    	|
@@ -254,14 +253,14 @@ Marcamos con un *X* en los cuales se incluyen:
 |   userprog|  *X*	            |   *X*          	|   *X*       	|   	    |
 |   vmem	|  *X*	            |   *X* 	        |      *X*	    |          	|
 ## Ejecticio 11:
-List es una implementacion de lista enlazada con prioridad, lo elementos de List son del tipo ListElement que se encarga de un solo item de la lista.
+List es una implementación de lista enlazada con prioridad, los elementos de List son del tipo ListElement que se encarga de un solo item de la lista.
 
-SynchList es una lista sincronizada, es decir una List que teine las siguientes restricciones:
+SynchList es una lista sincronizada, es decir una List que tiene las siguientes restricciones:
 
-    1- Un thread que intenta remover un item de List va a esperar hasta que la lista tenga un elemento en ella.
-    2- Solo un thread a la vez puede acceder a la estructura de lista.
+    1- Si un thread que intenta remover un item de List, va a esperar hasta que la lista tenga un elemento en ella.
+    2- Sólo un thread a la vez puede acceder a la estructura de lista.
 ## Ejecticio 12:
-Podemos encontrar definida la funcion *main* en:
+Podemos encontrar definida la función *main* en:
 
 
 - code/bin/coff2flat.c:
@@ -303,13 +302,13 @@ REVISAR ESTA CONCLUSION !!!!!!!!!!!1
 ## Ejecticio 13:
 Nachos soporta las siguentes lineas de comandos: 
 
- * `-d`: Imprime algunos mensajes de debugging.
+ * `-d`: Imprime algunos mensajes de depuración.
 
  * `-p`: Habilita la multitarea preventiva para los threads del kernel.
 
  * `-rs`: Hace que ocurran `Yield` en lugares aleatorios.
 
- * `-z`: Imprime informacion sobre version y copyrights.
+ * `-z`: Imprime información sobre versión y copyrights.
 
  * `-s`: Hace que los programas de usuarios se ejecuten en modo paso-simple.
 
@@ -317,13 +316,13 @@ Nachos soporta las siguentes lineas de comandos:
 
  * `-tc`: Testea la consola.
 
- * `-f`: Formatea el disco fisico.
+ * `-f`: Formatea el disco físico.
 
  * `-cp`: Copia archivo de UNIX a Nachos.
 
  * `-pr`: Imprime un archivo de Nachos a la salida estandar.
 
- * `-rm`: ELimina un archivo de Nachos del sistema.
+ * `-rm`: Elimina un archivo de Nachos del sistema.
 
  * `-ls`: Lista el contenido de el directorio de Nachos.
 
