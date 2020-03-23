@@ -257,8 +257,9 @@ List es una implementación de lista enlazada con prioridad, los elementos de Li
 
 SynchList es una lista sincronizada, es decir una List que tiene las siguientes restricciones:
 
-    1- Si un thread que intenta remover un item de List, va a esperar hasta que la lista tenga un elemento en ella.
-    2- Sólo un thread a la vez puede acceder a la estructura de lista.
+   * Si un thread que intenta remover un item de List, va a esperar hasta que la lista tenga un elemento en ella.
+   * Sólo un thread a la vez puede acceder a la estructura de lista.
+
 ## Ejecticio 12:
 Podemos encontrar definida la función *main* en:
 
