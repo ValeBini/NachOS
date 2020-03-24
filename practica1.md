@@ -340,8 +340,8 @@ Nachos soporta las siguentes lineas de comandos:
 La opcion `-rs` produce que ocurran `Yield` en lugares aleatorios.
 
 ## Ejercicio 14:
-Se modificó el archivo 'thread_test.cc'
+Se modificó el archivo `thread_test.cc`
 ## Ejercicio 15:
-Se modificó el archivo 'thread_test.cc'
+Se modificó el archivo `thread_test.cc`
 ## Ejercicio 16:
-Se modificó el archivo 'synch.cc'
+Se modificó el archivo `synch.cc`
