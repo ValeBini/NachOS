@@ -41,7 +41,7 @@ Luego
 4 + (32*32) * 128 = 131072 + 4
 ```
 
-## Ejecticio 4:
+## Ejercicio 4:
 ```c
 enum {
     OP_ADD      =  1,
@@ -114,7 +114,7 @@ enum {
 ```
 NachOS simula 60 instrucciones MIPS.
 
-## Ejecticio 5:
+## Ejercicio 5:
 ```c
 case OP_ADD:
             sum = registers[instr->rs] + registers[instr->rt];
@@ -139,7 +139,7 @@ Si ambas condiciones son verdaderas, esto indica que se produjo overflow, por lo
 En caso de que no haya overflow, guarda el resultado en el registro correspondiente.
 
 
-## Ejecticio 6:
+## Ejercicio 6:
 ### Primer Nivel:
 
 #### En main:
@@ -197,7 +197,7 @@ En caso de que no haya overflow, guarda el resultado en el registro correspondie
 4. Thread::GetName: implementado en /code/threads/thread.cc
 5. Thread::Sleep: implementado en /code/threads/thread.cc
 
-## Ejecticio 7:
+## Ejercicio 7:
 
 Son varias las razones por las que se prefiere emular una CPU en lugar de usar la existente. 
 
@@ -207,7 +207,7 @@ Por otro lado, si usáramos la PC real, nuestro núcleo debería poder compilars
 
 Por último, usar la CPU emulada facilita el testeo del código con GDB.
 
-## Ejecticio 8:
+## Ejercicio 8:
 
 ### ASSERT:
 
@@ -218,7 +218,7 @@ ASSERT toma una condición y la checkea. Si esta es verdadera, no hace nada y si
 
 DEBUG llama al método Debug::Print. Este toma una bandera, un puntero al formato de lo que se desea imprimir y los argumentos que se van a imprimir. Si la bandera está habilitada (se habilitan cuando se llama al programa), entonces imprime el mensaje que se pasó por argumento. Sirve para que nosotros elijamos qué información queremos que nos muestre durante la ejecución utilizando las diferentes banderas.
 
-## Ejecticio 9:
+## Ejercicio 9:
 
 Las banderas de depuración predefinidas son:
 
@@ -241,7 +241,7 @@ Las banderas de depuración predefinidas son:
  * `n` :  Mensajes de la simulación de red (requiere *NETWORK*).
 
 
-## Ejecticio 10:
+## Ejercicio 10:
 
 Las constantes estan definidas en los distintos Makefile para incluir distintos módulos.
 Marcamos con una *X* en los que se incluyen:
@@ -252,7 +252,7 @@ Marcamos con una *X* en los que se incluyen:
 |   network	|  *X*	            |   *X*	            |             	|   *X*   	|
 |   userprog|  *X*	            |   *X*          	|   *X*       	|   	    |
 |   vmem	|  *X*	            |   *X* 	        |      *X*	    |          	|
-## Ejecticio 11:
+## Ejercicio 11:
 List es una implementación de lista enlazada con prioridad, los elementos de List son del tipo ListElement que se encarga de un solo item de la lista.
 
 SynchList es una lista sincronizada, es decir una List que tiene las siguientes restricciones:
@@ -260,7 +260,7 @@ SynchList es una lista sincronizada, es decir una List que tiene las siguientes 
    * Si un thread que intenta remover un item de List, va a esperar hasta que la lista tenga un elemento en ella.
    * Sólo un thread a la vez puede acceder a la estructura de lista.
 
-## Ejecticio 12:
+## Ejercicio 12:
 Podemos encontrar definida la función *main* en:
 
 
@@ -300,7 +300,7 @@ Al inspeccionar *code/userprog/Makefile.depends* vemos:
 
 REVISAR ESTA CONCLUSION !!!!!!!!!!!1
 
-## Ejecticio 13:
+## Ejercicio 13:
 Nachos soporta las siguentes lineas de comandos: 
 
  * `-d`: Imprime algunos mensajes de depuración.
@@ -339,6 +339,6 @@ Nachos soporta las siguentes lineas de comandos:
 
 La opcion `-rs` produce que ocurran `Yield` en lugares aleatorios.
 
-## Ejecticio 14:
-## Ejecticio 15:
-## Ejecticio 16:
+## Ejercicio 14:
+## Ejercicio 15:
+## Ejercicio 16:
