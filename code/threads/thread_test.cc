@@ -42,11 +42,23 @@ void
 ThreadTest()
 {
     DEBUG('t', "Entering thread test\n");
+    
+    char **names = new char * [4];
+    for(int i=0; i<4; i++){
+    	names[i] = new char[64];
+    }
 
-    char *name = new char [64];
-    strncpy(name, "2nd", 64);
-    Thread *newThread = new Thread(name);
-    newThread->Fork(SimpleThread, (void *) name);
+    strncpy(names[0], "2nd", 64);
+    strncpy(names[1], "3rd", 64);
+    strncpy(names[2], "4th", 64);
+    strncpy(names[3], "5th", 64);
+
+    Thread **threads = new Thread * [4];
+
+    for(int i=0; i<4; i++){
+    	threads[i] = new Thread(names[i]);
+    	threads[i]->Fork(SimpleThread, (void *) names[i]);
+    }
 
     SimpleThread((void *) "1st");
 }
