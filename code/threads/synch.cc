@@ -70,6 +70,8 @@ Semaphore::P()
     }
     value--;  // Semaphore available, consume its value.
 
+    DEBUG('s',"P fue llamado en el semaforo %s \n",this->name);
+    
     interrupt->SetLevel(oldLevel);  // Re-enable interrupts.
 }
 
@@ -88,6 +90,8 @@ Semaphore::V()
         // Make thread ready, consuming the `V` immediately.
         scheduler->ReadyToRun(thread);
     value++;
+
+    DEBUG('s',"V fue llamado en el semaforo %s \n",this->name);
 
     interrupt->SetLevel(oldLevel);
 }

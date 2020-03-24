@@ -12,7 +12,12 @@
 
 
 #include "system.hh"
+#include "synch.hh"
+// #define SEMAPHORE_TEST
 
+#ifdef SEMAPHORE_TEST
+Semaphore *sem = new Semaphore("Semaforo", 3);
+#endif
 
 /// Loop 10 times, yielding the CPU to another ready thread each iteration.
 ///
@@ -21,17 +26,27 @@
 void
 SimpleThread(void *name_)
 {
+    #ifdef SEMAPHORE_TEST
+    sem->P();
+    #endif
+    
     // Reinterpret arg `name` as a string.
     char *name = (char *) name_;
 
     // If the lines dealing with interrupts are commented, the code will
     // behave incorrectly, because printf execution may cause race
     // conditions.
+
     for (unsigned num = 0; num < 10; num++) {
         printf("*** Thread `%s` is running: iteration %u\n", name, num);
         currentThread->Yield();
     }
+
     printf("!!! Thread `%s` has finished\n", name);
+    
+    #ifdef SEMAPHORE_TEST
+    sem->V();
+    #endif
 }
 
 /// Set up a ping-pong between several threads.
