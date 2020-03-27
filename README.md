@@ -298,7 +298,7 @@ Al inspeccionar *code/userprog/Makefile.depends* vemos:
   main.o: ../threads/main.cc 
   ```
 
-REVISAR ESTA CONCLUSION !!!!!!!!!!!1
+
 
 ## Ejercicio 13:
 Nachos soporta las siguentes lineas de comandos: 
