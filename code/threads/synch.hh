@@ -166,7 +166,9 @@ public:
 private:
 
     const char *name;
-
+    Lock *cLock;
+    // Lock queueLock;
+    List<Thread *> *queue;
     // Other needed fields are to be added here.
 };
 

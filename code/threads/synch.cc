@@ -95,6 +95,7 @@ Semaphore::V()
     DEBUG('s',"V fue llamado en el semaforo %s \n",this->name);
 
     interrupt->SetLevel(oldLevel);
+    
 }
 
 /// Dummy functions -- so we can compile our later assignments.
@@ -147,10 +148,17 @@ Lock::IsHeldByCurrentThread() const
 }
 
 Condition::Condition(const char *debugName, Lock *conditionLock)
-{}
+{
+    name = debugName;
+    cLock = conditionLock;
+    queue = new List<Thread *>;
+}
 
 Condition::~Condition()
-{}
+{
+    delete cLock;
+    delete queue;
+}
 
 const char *
 Condition::GetName() const
@@ -160,12 +168,38 @@ Condition::GetName() const
 
 void
 Condition::Wait()
-{}
+{
+
+    IntStatus oldLevel = interrupt->SetLevel(INT_OFF);
+    queue->Append(currentThread);
+    cLock->Release();
+    currentThread->Sleep();
+    cLock->Acquire();
+    interrupt->SetLevel(oldLevel);
+}
 
 void
 Condition::Signal()
-{}
+{
+
+    IntStatus oldLevel = interrupt->SetLevel(INT_OFF);
+    Thread *thread = queue->Pop();
+    if (thread != nullptr) scheduler->ReadyToRun(thread);
+
+    interrupt->SetLevel(oldLevel);
+}
 
 void
 Condition::Broadcast()
-{}
+{
+
+    IntStatus oldLevel = interrupt->SetLevel(INT_OFF);
+    Thread *thread =NULL;
+    while(!queue->IsEmpty()){
+        thread=queue->Pop();
+        scheduler->ReadyToRun(thread);
+    }
+
+    interrupt->SetLevel(oldLevel);
+
+}

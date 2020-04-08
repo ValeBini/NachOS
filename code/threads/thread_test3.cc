@@ -17,64 +17,61 @@
 #include <string.h>
 // #define SEMAPHORE_TEST
 // #define LOCK_TEST
+#define CONDITION_TEST
 
+#ifdef SEMAPHORE_TEST
+Semaphore *sem = new Semaphore("Semaforo", 3);
+#endif
+#ifdef LOCK_TEST
+Lock *lock = new Lock("Lock");
+#endif
+#ifdef CONDITION_TEST
 Lock *cLock = new Lock("cLock");
 Condition *condition = new Condition("Condition",cLock);
+#endif
 
-int shared = 1;
 /// Loop 10 times, yielding the CPU to another ready thread each iteration.
 ///
 /// * `name` points to a string with a thread name, just for debugging
 ///   purposes.
 void
-Suma(void *name_)
+SimpleThread(void *name_)
 {
+    #ifdef SEMAPHORE_TEST
+    sem->P();
+    #endif
 
+    #ifdef LOCK_TEST
+    lock->Acquire();
+    #endif
+
+
+    
+    // Reinterpret arg `name` as a string.
     char *name = (char *) name_;
+
+    // If the lines dealing with interrupts are commented, the code will
+    // behave incorrectly, because printf execution may cause race
+    // conditions.
     
     for (unsigned num = 0; num < 10; num++) {
-        
-        cLock->Acquire();
-        
-
-        shared++;
-        printf("*** Thread `%s` is running: iteration %u shared val: %i\n", name, num,shared);
-
-        cLock->Release();
-        if(shared == 1){
-            condition->Broadcast();
-        }
-
-        
+        printf("*** Thread `%s` is running: iteration %u\n", name, num);
         currentThread->Yield();
     }
 
     printf("!!! Thread `%s` has finished\n", name);
     
+    #ifdef SEMAPHORE_TEST
+    sem->V();
+    #endif
+
+    #ifdef LOCK_TEST
+    lock->Release();
+    #endif
+
+
 }
-void
-Resta(void *name_)
-{
 
-    char *name = (char *) name_;
-    
-    for (unsigned num = 0; num < 10; num++) {
-        
-        cLock->Acquire();
-        
-        
-        if(shared == 0)condition->Wait();
-
-        shared--;
-        printf("*** Thread `%s` is running: iteration %u shared val: %i\n", name, num,shared);
-
-        cLock->Release();
-        currentThread->Yield();
-    }
-
-    printf("!!! Thread `%s` has finished\n", name);
-    
-}
 /// Set up a ping-pong between several threads.
 ///
 /// Do it by launching ten threads which call `SimpleThread`, and finally
@@ -85,7 +82,7 @@ ThreadTest()
     DEBUG('t', "Entering thread test\n");
     
     char **names = new char * [4];
-    for(int i=0; i<5; i++){
+    for(int i=0; i<4; i++){
     	names[i] = new char[64];
     }
 
@@ -94,20 +91,12 @@ ThreadTest()
     strncpy(names[2], "4th", 64);
     strncpy(names[3], "5th", 64);
 
-    Thread **threads = new Thread * [5];
+    Thread **threads = new Thread * [4];
 
-    // int i=0;
-    // for(; i<2; i++){
-    // 	threads[i] = new Thread(names[i]);
-    // 	threads[i]->Fork(SimpleThread, (void *) names[i]);
-    // }
+    for(int i=0; i<4; i++){
+    	threads[i] = new Thread(names[i]);
+    	threads[i]->Fork(SimpleThread, (void *) names[i]);
+    }
 
-    threads[0] = new Thread(names[0]);
-    threads[0]->Fork(Suma,(void *) names[0]);
-    threads[1] = new Thread(names[1]);
-    threads[1]->Fork(Suma,(void *) names[1]);
-
-    threads[2] = new Thread(names[2]);
-    threads[2]->Fork(Resta,(void *) names[2]);
-    Resta((void *) "1st");
+    SimpleThread((void *) "1st");
 }
