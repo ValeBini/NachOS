@@ -58,14 +58,20 @@
 /// Some of the flags are interpreted here; some in `system.cc`.
 ///
 /// Copyright (c) 1992-1993 The Regents of the University of California.
-///               2016-2018 Docentes de la Universidad Nacional de Rosario.
+///               2016-2020 Docentes de la Universidad Nacional de Rosario.
 /// All rights reserved.  See `copyright.h` for copyright notice and
 /// limitation of liability and disclaimer of warranty provisions.
 
 
 #include "copyright.h"
-#include "lib/utility.hh"
 #include "system.hh"
+#include "lib/utility.hh"
+
+#include <stdio.h>
+#include <string.h>
+#ifdef NETWORK
+    #include <stdlib.h>
+#endif
 
 
 // External functions used by this file.
@@ -155,8 +161,8 @@ main(int argc, char **argv)
 #ifdef NETWORK
         if (!strcmp(*argv, "-tn")) {
             ASSERT(argc > 1);
-            Delay(2);  // Delay for 2 seconds to give the user time to start
-                       // up another nachos.
+            SystemDep::Delay(2);  // Delay for 2 seconds to give the user
+                                  // time to start up another nachos.
             MailTest(atoi(*(argv + 1)));
             argCount = 2;
         }

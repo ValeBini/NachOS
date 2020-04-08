@@ -13,7 +13,7 @@
 /// DO NOT CHANGE -- part of the machine emulation
 ///
 /// Copyright (c) 1992-1993 The Regents of the University of California.
-///               2016-2018 Docentes de la Universidad Nacional de Rosario.
+///               2016-2020 Docentes de la Universidad Nacional de Rosario.
 /// All rights reserved.  See `copyright.h` for copyright notice and
 /// limitation of liability and disclaimer of warranty provisions.
 
@@ -62,8 +62,8 @@ typedef void (*ExceptionHandler)(ExceptionType);
 /// If we were to implement more of the UNIX system calls, we ought to be
 /// able to run Nachos on top of Nachos!
 ///
-/// The procedures in this class are defined in `machine.cc`, `mipssim.cc`,
-/// and `translate.cc`.
+/// The procedures in this class are defined in `machine.cc` and
+/// `mips_sim.cc`.
 class Machine {
 public:
 

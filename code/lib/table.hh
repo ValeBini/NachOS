@@ -1,6 +1,6 @@
 /// A very simple map from non-negative integers to some type.
 ///
-/// Copyright (c) 2018 Docentes de la Universidad Nacional de Rosario.
+/// Copyright (c) 2018-2020 Docentes de la Universidad Nacional de Rosario.
 /// All rights reserved.  See `copyright.h` for copyright notice and
 /// limitation of liability and disclaimer of warranty provisions.
 
@@ -16,16 +16,27 @@ class Table {
 public:
     static const unsigned SIZE = 20;
 
+    /// Construct an empty table.
     Table();
 
+    /// Add an item into a free index.
+    ///
+    /// Returns -1 if no space is left to add the item.
     int Add(T item);
 
+    /// Get the item associated with a given index.
     T Get(int i) const;
 
+    /// Check whether a given index has an associated item.
     bool HasKey(int i) const;
 
+    /// Check whether the table is empty.
     bool IsEmpty() const;
 
+    /// Remove the item associated with a given index.
+    ///
+    /// Returns the removed item, or `T()` if the index is already
+    /// unoccupied.
     T Remove(int i);
 
 private:
@@ -75,11 +86,7 @@ Table<T>::Get(int i) const
 {
     ASSERT(i >= 0);
 
-    if (freed.Has(i) || i >= current) {
-        return T();
-    }
-
-    return data[i];
+    return HasKey(i) ? data[i] : T();
 }
 
 template <class T>
@@ -88,7 +95,7 @@ Table<T>::HasKey(int i) const
 {
     ASSERT(i >= 0);
 
-    return !(freed.Has(i) || i >= current);
+    return i < current && !freed.Has(i);
 }
 
 template <class T>

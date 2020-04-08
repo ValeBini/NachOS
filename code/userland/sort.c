@@ -33,5 +33,5 @@ main(void)
             }
 
     // And then we're done -- should be 0!
-    Exit(A[0]);
+    return A[0];
 }

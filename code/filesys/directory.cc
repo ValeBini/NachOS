@@ -15,7 +15,7 @@
 /// the parts to the assignment.
 ///
 /// Copyright (c) 1992-1993 The Regents of the University of California.
-///               2016-2018 Docentes de la Universidad Nacional de Rosario.
+///               2016-2020 Docentes de la Universidad Nacional de Rosario.
 /// All rights reserved.  See `copyright.h` for copyright notice and
 /// limitation of liability and disclaimer of warranty provisions.
 
@@ -24,6 +24,9 @@
 #include "directory_entry.hh"
 #include "file_header.hh"
 #include "lib/utility.hh"
+
+#include <stdio.h>
+#include <string.h>
 
 
 /// Initialize a directory; initially, the directory is completely empty.  If
@@ -159,12 +162,12 @@ Directory::Print() const
     printf("Directory contents:\n");
     for (unsigned i = 0; i < raw.tableSize; i++)
         if (raw.table[i].inUse) {
-            printf("\nDirectory entry.\n"
-                   "    Name: %s\n"
-                   "    Sector: %u\n",
+            printf("\nDirectory entry:\n"
+                   "    name: %s\n"
+                   "    sector: %u\n",
                    raw.table[i].name, raw.table[i].sector);
             hdr->FetchFrom(raw.table[i].sector);
-            hdr->Print();
+            hdr->Print(nullptr);
         }
     printf("\n");
     delete hdr;

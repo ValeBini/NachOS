@@ -17,4 +17,5 @@ main(void)
 {
     Halt();
     // Not reached.
+    return -1;
 }

@@ -4,7 +4,7 @@
 /// the list: thread control blocks, pending interrupts, etc.
 ///
 /// Copyright (c) 1992-1993 The Regents of the University of California.
-///               2016-2018 Docentes de la Universidad Nacional de Rosario.
+///               2016-2020 Docentes de la Universidad Nacional de Rosario.
 /// All rights reserved.  See `copyright.h` for copyright notice and
 /// limitation of liability and disclaimer of warranty provisions.
 

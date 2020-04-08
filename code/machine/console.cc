@@ -9,13 +9,15 @@
 /// DO NOT CHANGE -- part of the machine emulation
 ///
 /// Copyright (c) 1992-1993 The Regents of the University of California.
-///               2016-2017 Docentes de la Universidad Nacional de Rosario.
+///               2016-2020 Docentes de la Universidad Nacional de Rosario.
 /// All rights reserved.  See `copyright.h` for copyright notice and
 /// limitation of liability and disclaimer of warranty provisions.
 
 
 #include "console.hh"
 #include "threads/system.hh"
+
+#include <stdio.h>
 
 
 /// Dummy functions because C++ is weird about pointers to member functions.
@@ -56,12 +58,12 @@ Console::Console(const char *readFile, const char *writeFile,
     if (readFile == nullptr)
         readFileNo = 0;  // keyboard = stdin
     else
-        readFileNo = OpenForReadWrite(readFile, true);
+        readFileNo = SystemDep::OpenForReadWrite(readFile, true);
     // should be read-only
     if (writeFile == nullptr)
         writeFileNo = 1;  // display = stdout
     else
-        writeFileNo = OpenForWrite(writeFile);
+        writeFileNo = SystemDep::OpenForWrite(writeFile);
 
     // Set up the stuff to emulate asynchronous interrupts.
     writeHandler = writeDone;
@@ -79,9 +81,9 @@ Console::Console(const char *readFile, const char *writeFile,
 Console::~Console()
 {
     if (readFileNo != 0)
-        Close(readFileNo);
+        SystemDep::Close(readFileNo);
     if (writeFileNo != 1)
-        Close(writeFileNo);
+        SystemDep::Close(writeFileNo);
 }
 
 /// Periodically called to check if a character is available for
@@ -101,11 +103,11 @@ Console::CheckCharAvail()
             CONSOLE_TIME, CONSOLE_READ_INT);
 
     // Do nothing if character is already buffered, or none to be read.
-    if (incoming != EOF || !PollFile(readFileNo))
+    if (incoming != EOF || !SystemDep::PollFile(readFileNo))
         return;
 
     // Otherwise, read character and tell user about it.
-    Read(readFileNo, &c, sizeof c);
+    SystemDep::Read(readFileNo, &c, sizeof c);
     incoming = c;
     stats->numConsoleCharsRead++;
     (*readHandler)(handlerArg);
@@ -138,7 +140,7 @@ void
 Console::PutChar(char ch)
 {
     ASSERT(!putBusy);
-    WriteFile(writeFileNo, &ch, sizeof (char));
+    SystemDep::WriteFile(writeFileNo, &ch, sizeof (char));
     putBusy = true;
     interrupt->Schedule(ConsoleWriteDone, this,
                         CONSOLE_TIME, CONSOLE_WRITE_INT);

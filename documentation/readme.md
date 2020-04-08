@@ -3,8 +3,15 @@
 *Nachos* (*Not Another Completely Heuristic Operating System*) is an
 educational operating system.
 
-You are reading the readme file for the Nachos version *unr18a*. This version
-was released in 2019 by teachers of the National University of Rosario.
+You are reading the readme file for the Nachos version *unr20a*. This version
+was released in 2020 by teachers of the National University of Rosario.
+
+
+## Dependencies
+
+In order to build userland programs, a cross compiler is needed.  Some
+GNU/Linux distributions already provide one as an installable package.
+In Ubuntu, it's named `gcc-mipsel-linux-gnu`.
 
 
 ## Useful links
@@ -13,7 +20,7 @@ was released in 2019 by teachers of the National University of Rosario.
 
 * [Releases](https://svn.dcc.fceia.unr.edu.ar/svn/lcc/R-412/Public/nachos/)
 * [Assignments](https://svn.dcc.fceia.unr.edu.ar/svn/lcc/R-412/Public/prácticas/)
-* [Development repository](https://git.dcc.fceia.unr.edu.ar/mstreet/nachos-base)
+* [Development repository](https://git.dcc.fceia.unr.edu.ar/so2/nachos-base)
 
 ### Original Nachos
 

@@ -1,7 +1,7 @@
 /// Nachos initialization and cleanup routines.
 ///
 /// Copyright (c) 1992-1993 The Regents of the University of California.
-///               2016-2017 Docentes de la Universidad Nacional de Rosario.
+///               2016-2020 Docentes de la Universidad Nacional de Rosario.
 /// All rights reserved.  See `copyright.h` for copyright notice and
 /// limitation of liability and disclaimer of warranty provisions.
 
@@ -13,6 +13,9 @@
 #include "userprog/debugger.hh"
 #include "userprog/exception.hh"
 #endif
+
+#include <stdlib.h>
+#include <string.h>
 
 
 /// This defines *all* of the global data structures used by Nachos.
@@ -118,8 +121,8 @@ Initialize(int argc, char **argv)
             }
         } else if (!strcmp(*argv, "-rs")) {
             ASSERT(argc > 1);
-            RandomInit(atoi(*(argv + 1)));  // Initialize pseudo-random
-                                            // number generator.
+            SystemDep::RandomInit(atoi(*(argv + 1)));
+              // Initialize pseudo-random number generator.
             randomYield = true;
             argCount = 2;
         }
@@ -170,7 +173,7 @@ Initialize(int argc, char **argv)
     currentThread->SetStatus(RUNNING);
 
     interrupt->Enable();
-    CallOnUserAbort(Cleanup);  // If user hits ctl-C...
+    SystemDep::CallOnUserAbort(Cleanup);  // If user hits ctl-C...
 
     // Jose Miguel Santos Espino, 2007
     if (preemptiveScheduling) {

@@ -15,7 +15,7 @@
 /// DO NOT CHANGE -- part of the machine emulation
 ///
 /// Copyright (c) 1992-1993 The Regents of the University of California.
-///               2016-2017 Docentes de la Universidad Nacional de Rosario.
+///               2016-2020 Docentes de la Universidad Nacional de Rosario.
 /// All rights reserved.  See `copyright.h` for copyright notice and
 /// limitation of liability and disclaimer of warranty provisions.
 
@@ -74,7 +74,7 @@ int
 Timer::TimeOfNextInterrupt()
 {
     if (randomize)
-        return 1 + Random() % (TIMER_TICKS * 2);
+        return 1 + SystemDep::Random() % (TIMER_TICKS * 2);
     else
         return TIMER_TICKS;
 }

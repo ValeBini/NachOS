@@ -11,7 +11,7 @@
 
 # If you are cross-compiling, you need to point to the right executables and
 # change the flags to ld and the build procedure for as:
-#GCC_PREFIX = mips-suse-linux-
+#GCC_PREFIX = /home/mariano/usr/bin/mips-suse-linux-
 GCC_PREFIX = mipsel-linux-gnu-
 LDFLAGS    = -T arrangement.ld -N -s
 ASFLAGS    = -mips1
@@ -31,9 +31,9 @@ CPP = $(GCC_PREFIX)cpp
 
 INCLUDE_DIRS = -I../userprog -I../threads
 CFLAGS       = -std=c99 -G 0 -c $(INCLUDE_DIRS) -mips1 -mfp32 \
-               -nostdlib -nostartfiles -nodefaultlibs -mno-abicalls
+               -nostdlib -nostartfiles -nodefaultlibs -fno-pic -mno-abicalls
 
-PROGRAMS = halt shell tiny_shell matmult sort filetest
+PROGRAMS = echo filetest halt matmult shell sort tiny_shell touch
 
 
 .PHONY: all clean
@@ -44,9 +44,10 @@ clean:
 	$(RM) *.o *.coff $(PROGRAMS) || true
 
 start.o: start.s ../userprog/syscall.h
-	$(CPP) $(CPPFLAGS) $< >strt.s
-	$(AS) $(ASFLAGS) -o $@ strt.s
-	$(RM) strt.s
+	@echo ":: Compiling $$(tput bold)$@$$(tput sgr0)"
+	@$(CPP) $(CPPFLAGS) $< >strt.s
+	@$(AS) $(ASFLAGS) -o $@ strt.s
+	@$(RM) strt.s
 
 
 # Las reglas genéricas que siguen sirven para compilar programas simples,
@@ -54,8 +55,10 @@ start.o: start.s ../userprog/syscall.h
 # más complejos, se deben agregar reglas adecuadas.
 
 %.o: %.c
-	$(CC) $(CFLAGS) -c $^
+	@echo ":: Compiling $$(tput bold)$@$$(tput sgr0)"
+	@$(CC) $(CFLAGS) -c $^
 
 $(PROGRAMS): %: %.o start.o
-	$(LD) $(LDFLAGS) start.o $*.o -o $*.coff
-	../bin/coff2noff $*.coff $@
+	@echo ":: Linking and converting $$(tput bold)$@$$(tput sgr0)"
+	@$(LD) $(LDFLAGS) start.o $*.o -o $*.coff
+	@../bin/coff2noff $*.coff $@

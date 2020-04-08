@@ -3,13 +3,15 @@
 /// DO NOT CHANGE -- these stats are maintained by the machine emulation.
 ///
 /// Copyright (c) 1992-1993 The Regents of the University of California.
-///               2016-2018 Docentes de la Universidad Nacional de Rosario.
+///               2016-2020 Docentes de la Universidad Nacional de Rosario.
 /// All rights reserved.  See `copyright.h` for copyright notice and
 /// limitation of liability and disclaimer of warranty provisions.
 
 
 #include "statistics.hh"
 #include "lib/utility.hh"
+
+#include <stdio.h>
 
 
 /// Initialize performance metrics to zero, at system startup.
@@ -35,12 +37,12 @@ Statistics::Print()
         printf("WARNING: the tick counter was reset %lu times; the following"
                " statistics may be invalid.\n\n", tickResets);
 #endif
-    printf("Ticks: total %u, idle %u, system %u, user %u\n",
+    printf("Ticks: total %lu, idle %lu, system %lu, user %lu\n",
            totalTicks, idleTicks, systemTicks, userTicks);
-    printf("Disk I/O: reads %u, writes %u\n", numDiskReads, numDiskWrites);
-    printf("Console I/O: reads %u, writes %u\n",
+    printf("Disk I/O: reads %lu, writes %lu\n", numDiskReads, numDiskWrites);
+    printf("Console I/O: reads %lu, writes %lu\n",
            numConsoleCharsRead, numConsoleCharsWritten);
-    printf("Paging: faults %u\n", numPageFaults);
-    printf("Network I/O: packets received %u, sent %u\n",
+    printf("Paging: faults %lu\n", numPageFaults);
+    printf("Network I/O: packets received %lu, sent %lu\n",
            numPacketsRecvd, numPacketsSent);
 }

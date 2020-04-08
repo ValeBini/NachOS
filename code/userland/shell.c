@@ -10,7 +10,7 @@
 static inline unsigned
 strlen(const char *s)
 {
-    // TO DO: how to make sure that `s` is not `NULL`?
+    // TODO: how to make sure that `s` is not `NULL`?
 
     unsigned i;
     for (i = 0; s[i] != '\0'; i++);
@@ -27,7 +27,7 @@ WritePrompt(OpenFileId output)
 static inline void
 WriteError(const char *description, OpenFileId output)
 {
-    // TO DO: how to make sure that `description` is not `NULL`?
+    // TODO: how to make sure that `description` is not `NULL`?
 
     static const char PREFIX[] = "Error: ";
     static const char SUFFIX[] = "\n";
@@ -40,13 +40,13 @@ WriteError(const char *description, OpenFileId output)
 static unsigned
 ReadLine(char *buffer, unsigned size, OpenFileId input)
 {
-    // TO DO: how to make sure that `buffer` is not `NULL`?
+    // TODO: how to make sure that `buffer` is not `NULL`?
 
     unsigned i;
 
     for (i = 0; i < size; i++) {
         Read(&buffer[i], 1, input);
-        // TO DO: what happens when the input ends?
+        // TODO: what happens when the input ends?
         if (buffer[i] == '\n') {
             buffer[i] = '\0';
             break;
@@ -58,12 +58,12 @@ ReadLine(char *buffer, unsigned size, OpenFileId input)
 static int
 PrepareArguments(char *line, char **argv, unsigned argvSize)
 {
-    // TO DO: how to make sure that `line` and `argv` are not `NULL`?, and
-    //        for `argvSize`, what precondition should be fulfilled?
+    // TODO: how to make sure that `line` and `argv` are not `NULL`?, and
+    //       for `argvSize`, what precondition should be fulfilled?
     //
-    // PENDIENTE: use `bool` instead of `int` as return type; for doing this,
-    //            given that we are in C and not C++, it is convenient to
-    //            include `stdbool.h`.
+    // TODO: use `bool` instead of `int` as return type; for doing this,
+    //       given that we are in C and not C++, it is convenient to include
+    //       `stdbool.h`.
 
     unsigned argCount;
 
@@ -74,11 +74,11 @@ PrepareArguments(char *line, char **argv, unsigned argvSize)
     // characters, so as to be able to treat each argument as a standalone
     // string.
     //
-    // TO DO: what happens if there are two consecutive spaces?, and what
-    //        about spaces at the beginning of the line?, and at the end?
+    // TODO: what happens if there are two consecutive spaces?, and what
+    //       about spaces at the beginning of the line?, and at the end?
     //
-    // TO DO: what if the user wants to include a space as part of an
-    //        argument?
+    // TODO: what if the user wants to include a space as part of an
+    //       argument?
     for (unsigned i = 0; line[i] != '\0'; i++)
         if (line[i] == ARG_SEPARATOR) {
             if (argCount == argvSize - 1)
@@ -119,16 +119,17 @@ main(void)
         const SpaceId newProc = Exec(line);
         //const SpaceId newProc = Exec(line, argv);
 
-        // TO DO: check for errors when calling `Exec`; this depends on how
-        //        errors are reported.
+        // TODO: check for errors when calling `Exec`; this depends on how
+        //       errors are reported.
 
         Join(newProc);
-        // TO DO: is it necessary to check for errors after `Join` too, or
-        //        can you be sure that, with the implementation of the system
-        //        call handler you made, it will never give an error?; what
-        //        happens if tomorrow the implementation changes and new
-        //        error conditions appear?
+        // TODO: is it necessary to check for errors after `Join` too, or
+        //       can you be sure that, with the implementation of the system
+        //       call handler you made, it will never give an error?; what
+        //       happens if tomorrow the implementation changes and new
+        //       error conditions appear?
     }
 
-    return 0;  // Never reached.
+    // Never reached.
+    return -1;
 }

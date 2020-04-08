@@ -12,7 +12,7 @@
 ///   ready queue.
 ///
 /// Copyright (c) 1992-1993 The Regents of the University of California.
-///               2016-2017 Docentes de la Universidad Nacional de Rosario.
+///               2016-2020 Docentes de la Universidad Nacional de Rosario.
 /// All rights reserved.  See `copyright.h` for copyright notice and
 /// limitation of liability and disclaimer of warranty provisions.
 
@@ -21,6 +21,8 @@
 #include "switch.h"
 #include "synch.hh"
 #include "system.hh"
+
+#include <stdio.h>
 
 
 /// This is put at the top of the execution stack, for detecting stack
@@ -63,7 +65,8 @@ Thread::~Thread()
 
     ASSERT(this != currentThread);
     if (stack != nullptr)
-        DeallocBoundedArray((char *) stack, STACK_SIZE * sizeof *stack);
+        SystemDep::DeallocBoundedArray((char *) stack,
+                                       STACK_SIZE * sizeof *stack);
 }
 
 /// Invoke `(*func)(arg)`, allowing caller and callee to execute
@@ -261,16 +264,15 @@ Thread::StackAllocate(VoidFunctionPtr func, void *arg)
 {
     ASSERT(func != nullptr);
 
-    stack = (HostMemoryAddress *) AllocBoundedArray(STACK_SIZE
-                                                    * sizeof *stack);
+    stack = (HostMemoryAddress *)
+              SystemDep::AllocBoundedArray(STACK_SIZE * sizeof *stack);
 
-    // i386 & MIPS & SPARC stack works from high addresses to low addresses.
+    // Stacks in x86 work from high addresses to low addresses.
     stackTop = stack + STACK_SIZE - 4;  // -4 to be on the safe side!
 
-    // the 80386 passes the return address on the stack.  In order for
-    // `SWITCH` to go to `ThreadRoot` when we switch to this thread, the
-    // return addres used in `SWITCH` must be the starting address of
-    // `ThreadRoot`.
+    // x86 passes the return address on the stack.  In order for `SWITCH` to
+    // go to `ThreadRoot` when we switch to this thread, the return address
+    // used in `SWITCH` must be the starting address of `ThreadRoot`.
     *--stackTop = (HostMemoryAddress) ThreadRoot;
 
     *stack = STACK_FENCEPOST;

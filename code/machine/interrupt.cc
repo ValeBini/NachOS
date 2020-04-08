@@ -15,7 +15,7 @@
 /// DO NOT CHANGE -- part of the machine emulation
 ///
 /// Copyright (c) 1992-1993 The Regents of the University of California.
-///               2016-2017 Docentes de la Universidad Nacional de Rosario.
+///               2016-2020 Docentes de la Universidad Nacional de Rosario.
 /// All rights reserved.  See `copyright.h` for copyright notice and
 /// limitation of liability and disclaimer of warranty provisions.
 
@@ -24,6 +24,7 @@
 #include "threads/system.hh"
 
 #include <limits.h>
+#include <stdio.h>
 
 
 // String definitions for debugging messages
@@ -54,7 +55,7 @@ IsIntType(IntType t)
 /// * `time` is when (in simulated time) the interrupt is to occur.
 /// * `kind` is the hardware device that generated the interrupt.
 PendingInterrupt::PendingInterrupt(VoidFunctionPtr func, void *param,
-                                   unsigned time, IntType kind)
+                                   unsigned long time, IntType kind)
 {
     ASSERT(func != nullptr);
     ASSERT(IsIntType(kind));
@@ -269,22 +270,21 @@ Interrupt::RestartTicks()
 /// * `type` is the hardware device that generated the interrupt.
 void
 Interrupt::Schedule(VoidFunctionPtr handler, void *arg,
-                    unsigned fromNow, IntType type)
+                    unsigned long fromNow, IntType type)
 {
     ASSERT(handler != nullptr);
     ASSERT(fromNow > 0);
     ASSERT(IsIntType(type));
 
 #ifdef DFS_TICKS_FIX
-    if (UINT_MAX - stats->totalTicks < fromNow)
-    {
+    if (UINT_MAX - stats->totalTicks < fromNow) {
         DEBUG('x', "WARNING: total tick count is too large"
                    " and will be reset.\n");
         RestartTicks();
     }
 #else
     // Terminate Nachos if the ticks overflowed.
-    ASSERT(UINT_MAX - stats->totalTicks > fromNow);
+    ASSERT(ULONG_MAX - stats->totalTicks > fromNow);
 #endif
 
     unsigned when = stats->totalTicks + fromNow;
@@ -376,7 +376,7 @@ PrintPending(PendingInterrupt *pend)
 {
     ASSERT(pend != nullptr);
 
-    printf("    Handler %s, scheduled at %u\n",
+    printf("    Handler %s, scheduled at %lu\n",
            INT_TYPE_NAMES[pend->type], pend->when);
 }
 
@@ -385,7 +385,7 @@ PrintPending(PendingInterrupt *pend)
 void
 Interrupt::DumpState()
 {
-    printf("Time: %u, interrupts %s\n",
+    printf("Time: %lu, interrupts %s\n",
            stats->totalTicks, INT_LEVEL_NAMES[level]);
     if (pending->IsEmpty())
         printf("No pending interrupts\n");

@@ -7,14 +7,11 @@ main(void)
     SpaceId    newProc;
     OpenFileId input  = CONSOLE_INPUT;
     OpenFileId output = CONSOLE_OUTPUT;
-    char       prompt[2], ch, buffer[60];
+    char       prompt[2] = { '-', '-' };
+    char       ch, buffer[60];
     int        i;
 
-    prompt[0] = '-';
-    prompt[1] = '-';
-
-    while (1)
-    {
+    for (;;) {
         Write(prompt, 2, output);
         i = 0;
         do
@@ -28,4 +25,6 @@ main(void)
             Join(newProc);
         }
     }
+
+    return -1;
 }

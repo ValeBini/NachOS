@@ -9,13 +9,15 @@
 /// DO NOT CHANGE -- part of the machine emulation
 ///
 /// Copyright (c) 1992-1993 The Regents of the University of California.
-///               2016-2017 Docentes de la Universidad Nacional de Rosario.
+///               2016-2020 Docentes de la Universidad Nacional de Rosario.
 /// All rights reserved.  See `copyright.h` for copyright notice and
 /// limitation of liability and disclaimer of warranty provisions.
 
 
 #include "disk.hh"
 #include "threads/system.hh"
+
+#include <stdio.h>
 
 
 /// We put this at the front of the UNIX file representing the
@@ -56,19 +58,19 @@ Disk::Disk(const char *name, VoidFunctionPtr callWhenDone, void *callArg)
     lastSector = 0;
     bufferInit = 0;
 
-    fileno = OpenForReadWrite(name, false);
+    fileno = SystemDep::OpenForReadWrite(name, false);
     if (fileno >= 0) {  // File exists, check magic number.
-        Read(fileno, (char *) &magicNum, MAGIC_SIZE);
+        SystemDep::Read(fileno, (char *) &magicNum, MAGIC_SIZE);
         ASSERT(magicNum == MAGIC_NUMBER);
     } else {            // File does not exist, create it.
-        fileno = OpenForWrite(name);
+        fileno = SystemDep::OpenForWrite(name);
         magicNum = MAGIC_NUMBER;
-        WriteFile(fileno, (char *) &magicNum, MAGIC_SIZE);
+        SystemDep::WriteFile(fileno, (char *) &magicNum, MAGIC_SIZE);
           // Write magic number.
 
         // Need to write at end of file, so that reads will not return EOF.
-        Lseek(fileno, DISK_SIZE - sizeof (int), 0);
-        WriteFile(fileno, (char *) &tmp, sizeof (int));
+        SystemDep::Lseek(fileno, DISK_SIZE - sizeof (int), 0);
+        SystemDep::WriteFile(fileno, (char *) &tmp, sizeof (int));
     }
     active = false;
 }
@@ -76,7 +78,7 @@ Disk::Disk(const char *name, VoidFunctionPtr callWhenDone, void *callArg)
 /// Clean up disk simulation, by closing the UNIX file representing the disk.
 Disk::~Disk()
 {
-    Close(fileno);
+    SystemDep::Close(fileno);
 }
 
 /// Dump the data in a disk read/write request, for debugging.
@@ -121,8 +123,8 @@ Disk::ReadRequest(unsigned sectorNumber, char *data)
     ASSERT(sectorNumber >= 0 && sectorNumber < NUM_SECTORS);
 
     DEBUG('d', "Reading from sector %u\n", sectorNumber);
-    Lseek(fileno, SECTOR_SIZE * sectorNumber + MAGIC_SIZE, 0);
-    Read(fileno, data, SECTOR_SIZE);
+    SystemDep::Lseek(fileno, SECTOR_SIZE * sectorNumber + MAGIC_SIZE, 0);
+    SystemDep::Read(fileno, data, SECTOR_SIZE);
     if (debug.IsEnabled('d'))
         PrintSector(false, sectorNumber, data);
 
@@ -143,8 +145,8 @@ Disk::WriteRequest(unsigned sectorNumber, const char *data)
     ASSERT(sectorNumber >= 0 && sectorNumber < NUM_SECTORS);
 
     DEBUG('d', "Writing to sector %u\n", sectorNumber);
-    Lseek(fileno, SECTOR_SIZE * sectorNumber + MAGIC_SIZE, 0);
-    WriteFile(fileno, data, SECTOR_SIZE);
+    SystemDep::Lseek(fileno, SECTOR_SIZE * sectorNumber + MAGIC_SIZE, 0);
+    SystemDep::WriteFile(fileno, data, SECTOR_SIZE);
     if (debug.IsEnabled('d'))
         PrintSector(true, sectorNumber, data);
 

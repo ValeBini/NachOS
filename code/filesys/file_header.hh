@@ -5,7 +5,7 @@
 /// etc.)
 ///
 /// Copyright (c) 1992-1993 The Regents of the University of California.
-///               2016-2018 Docentes de la Universidad Nacional de Rosario.
+///               2016-2020 Docentes de la Universidad Nacional de Rosario.
 /// All rights reserved.  See `copyright.h` for copyright notice and
 /// limitation of liability and disclaimer of warranty provisions.
 
@@ -55,11 +55,11 @@ public:
     unsigned FileLength() const;
 
     /// Print the contents of the file.
-    void Print();
+    void Print(const char *title);
 
     /// Get the raw file header structure.
     ///
-    /// NOTE: this should only be used by routines that operating on the file
+    /// NOTE: this should only be used by routines that operate on the file
     /// system at a low level.
     const RawFileHeader *GetRaw() const;
 

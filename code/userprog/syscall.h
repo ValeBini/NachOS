@@ -6,7 +6,7 @@
 /// This file is included by user programs and by the Nachos kernel.
 ///
 /// Copyright (c) 1992-1993 The Regents of the University of California.
-///               2016-2017 Docentes de la Universidad Nacional de Rosario.
+///               2016-2020 Docentes de la Universidad Nacional de Rosario.
 /// All rights reserved.  See `copyright.h` for copyright notice and
 /// limitation of liability and disclaimer of warranty provisions.
 
@@ -71,7 +71,7 @@ int Join(SpaceId id);
 
 /// Fork a thread to run a procedure (`func`) in the *same* address space as
 /// the current thread.
-void Fork(void (*func)(void));
+int Fork(void (*func)(void));
 
 /// Yield the CPU to another runnable thread, whether in this address space
 /// or not.
@@ -99,7 +99,7 @@ typedef int OpenFileId;
 #define CONSOLE_OUTPUT  1
 
 /// Create a Nachos file, with `name`.
-void Create(const char *name);
+int Create(const char *name);
 
 /// Remove the Nachos file named `name`.
 int Remove(const char *name);
@@ -109,7 +109,7 @@ int Remove(const char *name);
 OpenFileId Open(const char *name);
 
 /// Write `size` bytes from `buffer` to the open file.
-void Write(const char *buffer, int size, OpenFileId id);
+int Write(const char *buffer, int size, OpenFileId id);
 
 /// Read `size` bytes from the open file into `buffer`.
 ///
@@ -120,7 +120,7 @@ void Write(const char *buffer, int size, OpenFileId id);
 int Read(char *buffer, int size, OpenFileId id);
 
 /// Close the file, we are done reading and writing to it.
-void Close(OpenFileId id);
+int Close(OpenFileId id);
 
 
 #endif

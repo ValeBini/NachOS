@@ -11,7 +11,7 @@
 #     Disassembles a normal MIPS executable.
 #
 # Copyright (c) 1992      The Regents of the University of California.
-#               2016-2017 Docentes de la Universidad Nacional de Rosario.
+#               2016-2020 Docentes de la Universidad Nacional de Rosario.
 # All rights reserved.  See `copyright.h` for copyright notice and
 # limitation of liability and disclaimer of warranty provisions.
 
@@ -39,18 +39,12 @@ clean:
 
 # Converts a COFF file to Nachos object format.
 coff2noff: coff2noff.o coff_reader.o coff_section.o
-	$(LD) $^ -o $@
-
 # Converts a COFF file to a flat address space (for Nachos version 2).
 coff2flat: coff2flat.o coff_reader.o coff_section.o
-	$(LD) $^ -o $@
-
-# Dis-assembles a COFF file.
+# Disassembles a COFF file.
 disassemble: out.o opstrings.o
-	$(LD) $^ -o $@
-
+# Dumps a NOFF header's contents.
 readnoff: readnoff.o
-	$(LD) $^ -o $@
 
 coff2noff.o: coff_reader.h coff_section.h coff.h noff.h
 coff2flat.o: coff_reader.h coff_section.h coff.h
@@ -58,3 +52,11 @@ coff_reader.o: coff.h
 coff_section.o: coff.h
 out.o: out.c d.c coff.h instr.h encode.h extern/syms.h
 readnoff.o: readnoff.c noff.h
+
+$(TARGETS): %:
+	@echo ":: Linking $$(tput bold)$@$$(tput sgr0)"
+	@$(LD) $^ -o $@
+
+%.o: %.c
+	@echo ":: Compiling $$(tput bold)$@$$(tput sgr0)"
+	@$(CC) $(CFLAGS) -c -o $@ $<

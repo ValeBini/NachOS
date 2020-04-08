@@ -11,7 +11,7 @@
 ///     really large file in tiny chunks (will not work on baseline system!)
 ///
 /// Copyright (c) 1992-1993 The Regents of the University of California.
-///               2016-2018 Docentes de la Universidad Nacional de Rosario.
+///               2016-2020 Docentes de la Universidad Nacional de Rosario.
 /// All rights reserved.  See `copyright.h` for copyright notice and
 /// limitation of liability and disclaimer of warranty provisions.
 
@@ -22,6 +22,9 @@
 #include "machine/statistics.hh"
 #include "threads/thread.hh"
 #include "threads/system.hh"
+
+#include <stdio.h>
+#include <string.h>
 
 
 static const unsigned TRANSFER_SIZE = 10;  // Make it small, just to be

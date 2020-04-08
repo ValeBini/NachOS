@@ -18,13 +18,16 @@
 /// * for a file already on disk, by reading the file header from disk.
 ///
 /// Copyright (c) 1992-1993 The Regents of the University of California.
-///               2016-2017 Docentes de la Universidad Nacional de Rosario.
+///               2016-2020 Docentes de la Universidad Nacional de Rosario.
 /// All rights reserved.  See `copyright.h` for copyright notice and
 /// limitation of liability and disclaimer of warranty provisions.
 
 
 #include "file_header.hh"
 #include "threads/system.hh"
+
+#include <ctype.h>
+#include <stdio.h>
 
 
 /// Initialize a fresh file header for a newly created file.  Allocate data
@@ -37,6 +40,9 @@ bool
 FileHeader::Allocate(Bitmap *freeMap, unsigned fileSize)
 {
     ASSERT(freeMap != nullptr);
+
+    if (fileSize > MAX_FILE_SIZE)
+        return false;
 
     raw.numBytes = fileSize;
     raw.numSectors = DivRoundUp(fileSize, SECTOR_SIZE);
@@ -68,7 +74,7 @@ FileHeader::Deallocate(Bitmap *freeMap)
 void
 FileHeader::FetchFrom(unsigned sector)
 {
-    synchDisk->ReadSector(sector, (char *) this);
+    synchDisk->ReadSector(sector, (char *) &raw);
 }
 
 /// Write the modified contents of the file header back to disk.
@@ -77,7 +83,7 @@ FileHeader::FetchFrom(unsigned sector)
 void
 FileHeader::WriteBack(unsigned sector)
 {
-    synchDisk->WriteSector(sector, (char *) this);
+    synchDisk->WriteSector(sector, (char *) &raw);
 }
 
 /// Return which disk sector is storing a particular byte within the file.
@@ -102,21 +108,28 @@ FileHeader::FileLength() const
 /// Print the contents of the file header, and the contents of all the data
 /// blocks pointed to by the file header.
 void
-FileHeader::Print()
+FileHeader::Print(const char *title)
 {
     char *data = new char [SECTOR_SIZE];
 
-    printf("FileHeader contents.\n"
-           "    Size: %u bytes\n"
-           "    Block numbers: ",
+    if (title == nullptr)
+        printf("File header:\n");
+    else
+        printf("%s file header:\n", title);
+
+    printf("    size: %u bytes\n"
+           "    block indexes: ",
            raw.numBytes);
+
     for (unsigned i = 0; i < raw.numSectors; i++)
         printf("%u ", raw.dataSectors[i]);
-    printf("\n    Contents:\n");
+    printf("\n");
+
     for (unsigned i = 0, k = 0; i < raw.numSectors; i++) {
+        printf("    contents of block %u:\n", raw.dataSectors[i]);
         synchDisk->ReadSector(raw.dataSectors[i], data);
         for (unsigned j = 0; j < SECTOR_SIZE && k < raw.numBytes; j++, k++) {
-            if ('\040' <= data[j] && data[j] <= '\176')  // isprint(data[j])
+            if (isprint(data[j]))
                 printf("%c", data[j]);
             else
                 printf("\\%X", (unsigned char) data[j]);

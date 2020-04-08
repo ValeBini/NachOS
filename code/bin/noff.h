@@ -2,6 +2,11 @@
 ///
 /// Basically, we only know about three types of segments: code (read-only),
 /// initialized data, and unitialized data.
+///
+/// Copyright (c) 1992-1993 The Regents of the University of California.
+///               2016-2020 Docentes de la Universidad Nacional de Rosario.
+/// All rights reserved.  See `copyright.h` for copyright notice and
+/// limitation of liability and disclaimer of warranty provisions.
 
 #ifndef NACHOS_BIN_NOFF__H
 #define NACHOS_BIN_NOFF__H

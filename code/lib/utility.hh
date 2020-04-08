@@ -3,7 +3,7 @@
 /// See also `lib/debug.hh`.
 ///
 /// Copyright (c) 1992-1993 The Regents of the University of California.
-///               2016-2018 Docentes de la Universidad Nacional de Rosario.
+///               2016-2020 Docentes de la Universidad Nacional de Rosario.
 /// All rights reserved.  See `copyright.h` for copyright notice and
 /// limitation of liability and disclaimer of warranty provisions.
 
@@ -11,6 +11,7 @@
 #define NACHOS_LIB_UTILITY__HH
 
 
+#include "assert.hh"
 #include "debug.hh"
 
 
@@ -70,22 +71,6 @@ extern Debug debug;
 
 #define DEBUG       (debug.Print)
 #define DEBUG_CONT  (debug.PrintCont)
-
-/// If `condition` is false, print a message and dump core.
-///
-/// Useful for documenting assumptions in the code.
-///
-/// NOTE: needs to be a `#define`, to be able to print the location where the
-/// error occurred.
-#define ASSERT(condition)                                                 \
-    if (!(condition)) {                                                   \
-        fprintf(stderr, "\nAssertion failed!\n"                           \
-                        "\tExpression: `%s`\n"                            \
-                        "\tLocation: file `%s`, line %u\n",               \
-                #condition, __FILE__, __LINE__);                          \
-        fflush(stderr);                                                   \
-        abort();                                                          \
-    }
 
 
 #endif

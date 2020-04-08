@@ -1,7 +1,18 @@
+/// Copyright (c) 2019-2020 Docentes de la Universidad Nacional de Rosario.
+/// All rights reserved.  See `copyright.h` for copyright notice and
+/// limitation of liability and disclaimer of warranty provisions.
+
+
 #include "transfer.hh"
 #include "lib/utility.hh"
 #include "threads/system.hh"
 
+
+void ReadBufferFromUser(int userAddress, char *outBuffer,
+                        unsigned byteCount)
+{
+    // TODO: implement.
+}
 
 bool ReadStringFromUser(int userAddress, char *outString,
                         unsigned maxByteCount)
@@ -21,4 +32,13 @@ bool ReadStringFromUser(int userAddress, char *outString,
     return *(outString - 1) == '\0';
 }
 
-// TODO: complete...
+void WriteBufferToUser(const char *buffer, int userAddress,
+                       unsigned byteCount)
+{
+    // TODO: implement.
+}
+
+void WriteStringToUser(const char *string, int userAddress)
+{
+    // TODO: implement.
+}

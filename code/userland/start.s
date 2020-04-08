@@ -20,8 +20,10 @@
         .ent    __start
 __start:
         jal     main
-        move    $4, $0
-        jal     Exit  // If we return from `main`, `exit(0)`.
+        // If `main` returns, invoke `Exit` with the return value as
+        // argument.
+        move    $4, $2
+        jal     Exit
         .end    __start
 
 /// System call stubs
@@ -91,6 +93,8 @@ Create:
         j       $31
         .end    Create
 
+        .globl  Remove
+        .ent    Remove
 Remove:
         addiu   $2, $0, SC_REMOVE
         syscall

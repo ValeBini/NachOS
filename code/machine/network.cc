@@ -4,12 +4,15 @@
 /// DO NOT CHANGE -- part of the machine emulation
 ///
 /// Copyright (c) 1992-1993 The Regents of the University of California.
-///               2016-2017 Docentes de la Universidad Nacional de Rosario.
+///               2016-2020 Docentes de la Universidad Nacional de Rosario.
 /// All rights reserved.  See `copyright.h` for copyright notice and
 /// limitation of liability and disclaimer of warranty provisions.
 
 
 #include "threads/system.hh"
+
+#include <stdio.h>
+#include <string.h>
 
 
 /// Dummy functions because C++ cannot call member functions indirectly.
@@ -57,10 +60,10 @@ Network::Network(NetworkAddress addr, double reliability,
     sendBusy = false;
     inHdr.length = 0;
 
-    sock = OpenSocket();
+    sock = SystemDep::OpenSocket();
     snprintf(sockName, sizeof sockName, "SOCKET_%u", (unsigned) addr);
-    AssignNameToSocket(sockName, sock);     // Bind socket to a filename in the
-                     // current directory.
+    SystemDep::AssignNameToSocket(sockName, sock);
+      // Bind socket to a filename in the current directory.
 
     // Start polling for incoming packets.
     interrupt->Schedule(NetworkReadPoll, this,
@@ -69,8 +72,8 @@ Network::Network(NetworkAddress addr, double reliability,
 
 Network::~Network()
 {
-    CloseSocket(sock);
-    DeAssignNameToSocket(sockName);
+    SystemDep::CloseSocket(sock);
+    SystemDep::DeAssignNameToSocket(sockName);
 }
 
 /// If a packet is already buffered, we simply delay reading the incoming
@@ -85,12 +88,12 @@ Network::CheckPktAvail()
 
     if (inHdr.length != 0)  // Do nothing if packet is already buffered.
         return;
-    if (!PollSocket(sock))  // Do nothing if no packet to be read.
+    if (!SystemDep::PollSocket(sock))  // Do nothing if no packet to be read.
         return;
 
     // Otherwise, read packet in.
     char *buffer = new char [MAX_WIRE_SIZE];
-    ReadFromSocket(sock, buffer, MAX_WIRE_SIZE);
+    SystemDep::ReadFromSocket(sock, buffer, MAX_WIRE_SIZE);
 
     // Divide packet into header and data.
     inHdr = *(PacketHeader *) buffer;
@@ -136,7 +139,8 @@ Network::Send(PacketHeader hdr, const char *data)
     interrupt->Schedule(NetworkSendDone, this,
                         NETWORK_TIME, NETWORK_SEND_INT);
 
-    if (Random() % 100 >= chanceToWork * 100) { // Emulate a lost packet.
+    // Emulate a lost packet.
+    if (SystemDep::Random() % 100 >= chanceToWork * 100) {
         DEBUG('n', "oops, lost it!\n");
         return;
     }
@@ -145,7 +149,7 @@ Network::Send(PacketHeader hdr, const char *data)
     char *buffer = new char [MAX_WIRE_SIZE];
     *(PacketHeader *) buffer = hdr;
     memcpy(buffer + sizeof (PacketHeader), data, hdr.length);
-    SendToSocket(sock, buffer, MAX_WIRE_SIZE, toName);
+    SystemDep::SendToSocket(sock, buffer, MAX_WIRE_SIZE, toName);
     delete [] buffer;
 }
 

@@ -3,7 +3,7 @@
 /// DO NOT CHANGE -- these stats are maintained by the machine emulation
 ///
 /// Copyright (c) 1992-1993 The Regents of the University of California.
-///               2016-2017 Docentes de la Universidad Nacional de Rosario.
+///               2016-2020 Docentes de la Universidad Nacional de Rosario.
 /// All rights reserved.  See `copyright.h` for copyright notice and
 /// limitation of liability and disclaimer of warranty provisions.
 
@@ -20,38 +20,38 @@ class Statistics {
 public:
 
     /// Total time running Nachos.
-    unsigned totalTicks;
+    unsigned long totalTicks;
 
     /// Time spent idle (no threads to run).
-    unsigned idleTicks;
+    unsigned long idleTicks;
 
     /// Time spent executing system code.
-    unsigned systemTicks;
+    unsigned long systemTicks;
 
     /// Time spent executing user code (this is also equal to # of user
     /// instructions executed).
-    unsigned userTicks;
+    unsigned long userTicks;
 
     /// Number of disk read requests.
-    unsigned numDiskReads;
+    unsigned long numDiskReads;
 
     /// Number of disk write requests.
-    unsigned numDiskWrites;
+    unsigned long numDiskWrites;
 
     /// Number of characters read from the keyboard.
-    unsigned numConsoleCharsRead;
+    unsigned long numConsoleCharsRead;
 
     /// Number of characters written to the display.
-    unsigned numConsoleCharsWritten;
+    unsigned long numConsoleCharsWritten;
 
     /// Number of virtual memory page faults.
-    unsigned numPageFaults;
+    unsigned long numPageFaults;
 
     /// Number of packets sent over the network.
-    unsigned numPacketsSent;
+    unsigned long numPacketsSent;
 
     /// Number of packets received over the network.
-    unsigned numPacketsRecvd;
+    unsigned long numPacketsRecvd;
 
 #ifdef DFS_TICKS_FIX
     /// Number of times the tick count gets reset.
@@ -74,19 +74,19 @@ public:
 /// kernel measured by the number of calls to enable interrupts, these time
 /// constants are none too exact.
 
-const unsigned USER_TICK     = 1;
+const unsigned long USER_TICK     = 1;
   ///< Advance for each user-level instruction.
-const unsigned SYSTEM_TICK   = 10;
+const unsigned long SYSTEM_TICK   = 10;
   ///< Advance each time interrupts are enabled.
-const unsigned ROTATION_TIME = 500;
+const unsigned long ROTATION_TIME = 500;
   ///< Time disk takes to rotate one sector.
-const unsigned SEEK_TIME     = 500;
+const unsigned long SEEK_TIME     = 500;
   ///< Time disk takes to seek past one track.
-const unsigned CONSOLE_TIME  = 100;
+const unsigned long CONSOLE_TIME  = 100;
   ///< Time to read or write one character.
-const unsigned NETWORK_TIME  = 100;
+const unsigned long NETWORK_TIME  = 100;
   ///< Time to send or receive one packet.
-const unsigned TIMER_TICKS   = 100;
+const unsigned long TIMER_TICKS   = 100;
   ///< (Average) time between timer interrupts.
 
 

@@ -12,7 +12,7 @@
 /// system by different threads -- this is part of the assignment.
 ///
 /// Copyright (c) 1992-1993 The Regents of the University of California.
-///               2016-2018 Docentes de la Universidad Nacional de Rosario.
+///               2016-2020 Docentes de la Universidad Nacional de Rosario.
 /// All rights reserved.  See `copyright.h` for copyright notice and
 /// limitation of liability and disclaimer of warranty provisions.
 
@@ -38,22 +38,22 @@ public:
     /// Close the file.
     ~OpenFile()
     {
-        Close(file);
+        SystemDep::Close(file);
     }
 
     int ReadAt(char *into, unsigned numBytes, unsigned position)
     {
         ASSERT(into != nullptr);
         ASSERT(numBytes > 0);
-        Lseek(file, position, 0);
-        return ReadPartial(file, into, numBytes);
+        SystemDep::Lseek(file, position, 0);
+        return SystemDep::ReadPartial(file, into, numBytes);
     }
     int WriteAt(const char *from, unsigned numBytes, unsigned position)
     {
         ASSERT(from != nullptr);
         ASSERT(numBytes > 0);
-        Lseek(file, position, 0);
-        WriteFile(file, from, numBytes);
+        SystemDep::Lseek(file, position, 0);
+        SystemDep::WriteFile(file, from, numBytes);
         return numBytes;
     }
     int Read(char *into, unsigned numBytes)
@@ -75,8 +75,8 @@ public:
 
     unsigned Length() const
     {
-        Lseek(file, 0, 2);
-        return Tell(file);
+        SystemDep::Lseek(file, 0, 2);
+        return SystemDep::Tell(file);
     }
 
 private:

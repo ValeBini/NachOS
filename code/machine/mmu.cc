@@ -23,7 +23,7 @@
 /// DO NOT CHANGE -- part of the machine emulation
 ///
 /// Copyright (c) 1992-1993 The Regents of the University of California.
-///               2016-2017 Docentes de la Universidad Nacional de Rosario.
+///               2016-2020 Docentes de la Universidad Nacional de Rosario.
 /// All rights reserved.  See `copyright.h` for copyright notice and
 /// limitation of liability and disclaimer of warranty provisions.
 
@@ -171,7 +171,7 @@ MMU::RetrievePageEntry(unsigned vpn, TranslationEntry **entry) const
         // Use the TLB.
 
         unsigned i;
-        for (entry = nullptr, i = 0; i < TLB_SIZE; i++)
+        for (i = 0; i < TLB_SIZE; i++)
             if (tlb[i].valid && tlb[i].virtualPage == vpn) {
                 *entry = &tlb[i];  // FOUND!
                 return NO_EXCEPTION;

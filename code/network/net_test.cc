@@ -13,7 +13,7 @@
 ///     variables.
 ///
 /// Copyright (c) 1992-1993 The Regents of the University of California.
-///               2016-2017 Docentes de la Universidad Nacional de Rosario.
+///               2016-2020 Docentes de la Universidad Nacional de Rosario.
 /// All rights reserved.  See `copyright.h` for copyright notice and
 /// limitation of liability and disclaimer of warranty provisions.
 
@@ -22,6 +22,9 @@
 #include "post.hh"
 #include "machine/interrupt.hh"
 #include "threads/system.hh"
+
+#include <stdio.h>
+#include <string.h>
 
 
 /// Test out message delivery, by doing the following:

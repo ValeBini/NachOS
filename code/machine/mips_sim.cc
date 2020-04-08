@@ -6,7 +6,7 @@
 /// DO NOT CHANGE -- part of the machine emulation
 ///
 /// Copyright (c) 1992-1993 The Regents of the University of California.
-///               2016-2017 Docentes de la Universidad Nacional de Rosario.
+///               2016-2020 Docentes de la Universidad Nacional de Rosario.
 /// All rights reserved.  See `copyright.h` for copyright notice and
 /// limitation of liability and disclaimer of warranty provisions.
 
@@ -14,6 +14,8 @@
 #include "instruction.hh"
 #include "machine.hh"
 #include "threads/system.hh"
+
+#include <stdio.h>
 
 
 /// Simulate the execution of a user-level program on Nachos.
@@ -29,7 +31,7 @@ Machine::Run()
       // Storage for decoded instruction.
 
     if (debug.IsEnabled('m'))
-        printf("Starting to run at time %u\n", stats->totalTicks);
+        printf("Starting to run at time %lu\n", stats->totalTicks);
     interrupt->SetStatus(USER_MODE);
 
     for (;;) {

@@ -1,6 +1,11 @@
 /// Routines for converting Words and Short Words to and from the simulated
 /// machine's format of little endian.  These end up being NOPs when the host
 /// machine is also little endian (DEC and Intel).
+///
+/// Copyright (c) 1992-1993 The Regents of the University of California.
+///               2016-2020 Docentes de la Universidad Nacional de Rosario.
+/// All rights reserved.  See `copyright.h` for copyright notice and
+/// limitation of liability and disclaimer of warranty provisions.
 
 
 #include "endianness.hh"

@@ -36,5 +36,5 @@ main(void)
                 C[i][j] += A[i][k] * B[k][j];
 
     // And then we are done.
-    Exit(C[DIM - 1][DIM - 1]);
+    return C[DIM - 1][DIM - 1];
 }

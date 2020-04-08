@@ -28,7 +28,7 @@
 ///   initialized.
 ///
 /// Copyright (c) 1992-1993 The Regents of the University of California.
-///               2016-2017 Docentes de la Universidad Nacional de Rosario.
+///               2016-2020 Docentes de la Universidad Nacional de Rosario.
 /// All rights reserved.  See `copyright.h` for copyright notice and
 /// limitation of liability and disclaimer of warranty provisions.
 
@@ -53,10 +53,10 @@ public:
     {
         ASSERT(name != nullptr);
 
-        int fileDescriptor = OpenForWrite(name);
+        int fileDescriptor = SystemDep::OpenForWrite(name);
         if (fileDescriptor == -1)
             return false;
-        Close(fileDescriptor);
+        SystemDep::Close(fileDescriptor);
         return true;
     }
 
@@ -64,7 +64,7 @@ public:
     {
         ASSERT(name != nullptr);
 
-        int fileDescriptor = OpenForReadWrite(name, false);
+        int fileDescriptor = SystemDep::OpenForReadWrite(name, false);
         if (fileDescriptor == -1)
             return nullptr;
         return new OpenFile(fileDescriptor);
@@ -73,7 +73,7 @@ public:
     bool Remove(const char *name)
     {
         ASSERT(name != nullptr);
-        return Unlink(name) == 0;
+        return SystemDep::Unlink(name) == 0;
     }
 
 };

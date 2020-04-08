@@ -3,7 +3,7 @@
 /// It only works on Linux x86 environments.
 ///
 /// Copyright (c) 2007      Universidad de Las Palmas de Gran Canaria.
-///               2016-2017 Docentes de la Universidad Nacional de Rosario.
+///               2016-2020 Docentes de la Universidad Nacional de Rosario.
 /// Permission to use, copy, modify, and distribute this software and its
 /// documentation for any purpose, without fee, and without written agreement
 /// is hereby granted, provided that the above copyright notice appear in all

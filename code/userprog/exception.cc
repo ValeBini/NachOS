@@ -17,7 +17,7 @@
 /// dumps.
 ///
 /// Copyright (c) 1992-1993 The Regents of the University of California.
-///               2016-2019 Docentes de la Universidad Nacional de Rosario.
+///               2016-2020 Docentes de la Universidad Nacional de Rosario.
 /// All rights reserved.  See `copyright.h` for copyright notice and
 /// limitation of liability and disclaimer of warranty provisions.
 
@@ -26,6 +26,8 @@
 #include "syscall.h"
 #include "filesys/directory_entry.hh"
 #include "threads/system.hh"
+
+#include <stdio.h>
 
 
 static void
@@ -42,6 +44,10 @@ IncrementPC()
 }
 
 /// Do some default behavior for an unexpected exception.
+///
+/// NOTE: this function is meant specifically for unexpected exceptions.  If
+/// you implement a new behavior for some exception, do not extend this
+/// function: assign a new handler instead.
 ///
 /// * `et` is the kind of exception.  The list of possible exceptions is in
 ///   `machine/exception_type.hh`.
@@ -79,27 +85,27 @@ SyscallHandler(ExceptionType _et)
     switch (scid) {
 
         case SC_HALT:
-            DEBUG('a', "Shutdown, initiated by user program.\n");
+            DEBUG('e', "Shutdown, initiated by user program.\n");
             interrupt->Halt();
             break;
 
         case SC_CREATE: {
             int filenameAddr = machine->ReadRegister(4);
             if (filenameAddr == 0)
-                DEBUG('a', "Error: address to filename string is null.\n");
+                DEBUG('e', "Error: address to filename string is null.\n");
 
             char filename[FILE_NAME_MAX_LEN + 1];
             if (!ReadStringFromUser(filenameAddr, filename, sizeof filename))
-                DEBUG('a', "Error: filename string too long (maximum is %u bytes).\n",
+                DEBUG('e', "Error: filename string too long (maximum is %u bytes).\n",
                       FILE_NAME_MAX_LEN);
 
-            DEBUG('a', "Open requested for file `%s`.\n", filename);
+            DEBUG('e', "`Create` requested for file `%s`.\n", filename);
             break;
         }
 
         case SC_CLOSE: {
             int fid = machine->ReadRegister(4);
-            DEBUG('a', "Close requested for id %u.\n", fid);
+            DEBUG('e', "`Close` requested for id %u.\n", fid);
             break;
         }
 

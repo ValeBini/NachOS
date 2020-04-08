@@ -6,7 +6,7 @@
 /// program (see `thread.hh`).
 ///
 /// Copyright (c) 1992-1993 The Regents of the University of California.
-///               2016-2017 Docentes de la Universidad Nacional de Rosario.
+///               2016-2020 Docentes de la Universidad Nacional de Rosario.
 /// All rights reserved.  See `copyright.h` for copyright notice and
 /// limitation of liability and disclaimer of warranty provisions.
 
@@ -24,11 +24,17 @@ const unsigned USER_STACK_SIZE = 1024;  ///< Increase this as necessary!
 class AddressSpace {
 public:
 
-    /// Create an address space, initializing it with the program stored in
-    /// the file `executable`.
+    /// Create an address space to run a user program.
     ///
-    /// * `executable` is the open file that corresponds to the program.
-    AddressSpace(OpenFile *executable);
+    /// The address space is initialized from an already opened file.
+    /// The program contained in the file is loaded into memory and
+    /// everything is set up so that user instructions can start to be
+    /// executed.
+    ///
+    /// Parameters:
+    /// * `executable_file` is the open file that corresponds to the
+    ///   program; it contains the object code to load into memory.
+    AddressSpace(OpenFile *executable_file);
 
     /// De-allocate an address space.
     ~AddressSpace();
