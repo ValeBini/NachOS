@@ -24,7 +24,8 @@
 
 #include "synch.hh"
 #include "system.hh"
-
+#include <stdio.h>
+#include <string.h>
 
 /// Initialize a semaphore, so that it can be used for synchronization.
 ///

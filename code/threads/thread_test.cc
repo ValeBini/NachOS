@@ -13,6 +13,8 @@
 
 #include "system.hh"
 #include "synch.hh"
+#include <stdio.h>
+#include <string.h>
 // #define SEMAPHORE_TEST
 
 #ifdef SEMAPHORE_TEST
