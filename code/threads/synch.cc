@@ -103,10 +103,16 @@ Semaphore::V()
 /// case in the network assignment will not work!
 
 Lock::Lock(const char *debugName)
-{}
+{
+    name = debugName;
+    actualThread= NULL;
+    semaforo = new Semaphore(debugName,1);
+}
 
 Lock::~Lock()
-{}
+{
+    delete semaforo;
+}
 
 const char *
 Lock::GetName() const
@@ -116,15 +122,29 @@ Lock::GetName() const
 
 void
 Lock::Acquire()
-{}
+{
+    ASSERT( !IsHeldByCurrentThread() );
+    semaforo->P();
+    actualThread = currentThread;
+}
 
 void
 Lock::Release()
-{}
+{
+    ASSERT( IsHeldByCurrentThread() );
+    actualThread = NULL;
+    semaforo->V();
 
+
+}
+// Debe implementar tambi´en la funci´on Lock::IsHeldByCurrentThread y utilizarla para comprobar (mediante
+// ASSERT) que el hilo que realice un Acquire no posea el “lock” y que el hilo que haga
+// Release s´ı lo posea.
 bool
 Lock::IsHeldByCurrentThread() const
-{}
+{
+    return currentThread == actualThread;
+}
 
 Condition::Condition(const char *debugName, Lock *conditionLock)
 {}
