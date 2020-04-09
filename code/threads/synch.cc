@@ -72,7 +72,7 @@ Semaphore::P()
     value--;  // Semaphore available, consume its value.
 
     DEBUG('s',"P fue llamado en el semaforo %s \n",this->name);
-    
+
     interrupt->SetLevel(oldLevel);  // Re-enable interrupts.
 }
 
@@ -95,7 +95,7 @@ Semaphore::V()
     DEBUG('s',"V fue llamado en el semaforo %s \n",this->name);
 
     interrupt->SetLevel(oldLevel);
-    
+
 }
 
 /// Dummy functions -- so we can compile our later assignments.

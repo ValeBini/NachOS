@@ -15,66 +15,119 @@
 #include "synch.hh"
 #include <stdio.h>
 #include <string.h>
+#include <string>
 // #define SEMAPHORE_TEST
 // #define LOCK_TEST
+// #define CONDITION_TEST_1
+// #define CONDITION_TEST_2
 
+#ifdef SEMAPHORE_TEST
+Semaphore *sem = new Semaphore("Semaforo", 3);
+#endif
+
+#ifdef LOCK_TEST
+Lock *lock = new Lock("Lock");
+#endif
+
+#if defined(CONDITION_TEST_1) || defined(CONDITION_TEST_2)
 Lock *cLock = new Lock("cLock");
 Condition *condition = new Condition("Condition",cLock);
+#endif
 
-int shared = 1;
 /// Loop 10 times, yielding the CPU to another ready thread each iteration.
 ///
 /// * `name` points to a string with a thread name, just for debugging
 ///   purposes.
 void
-Suma(void *name_)
+SimpleThread(void *name_)
 {
+    #ifdef SEMAPHORE_TEST
+    sem->P();
+    #endif
 
+    #ifdef LOCK_TEST
+    lock->Acquire();
+    #endif
+
+
+
+    // Reinterpret arg `name` as a string.
     char *name = (char *) name_;
-    
+
+    // If the lines dealing with interrupts are commented, the code will
+    // behave incorrectly, because printf execution may cause race
+    // conditions.
+
     for (unsigned num = 0; num < 10; num++) {
-        
-        cLock->Acquire();
-        
-
-        shared++;
-        printf("*** Thread `%s` is running: iteration %u shared val: %i\n", name, num,shared);
-
-        cLock->Release();
-        if(shared == 1){
-            condition->Broadcast();
-        }
-
-        
+        printf("*** Thread `%s` is running: iteration %u\n", name, num);
         currentThread->Yield();
     }
 
     printf("!!! Thread `%s` has finished\n", name);
-    
+
+    #ifdef SEMAPHORE_TEST
+    sem->V();
+    #endif
+
+    #ifdef LOCK_TEST
+    lock->Release();
+    #endif
+
+
 }
+
+
+#if defined(CONDITION_TEST_1) || defined(CONDITION_TEST_2)
+
 void
-Resta(void *name_)
-{
-
-    char *name = (char *) name_;
-    
-    for (unsigned num = 0; num < 10; num++) {
-        
-        cLock->Acquire();
-        
-        
-        if(shared == 0)condition->Wait();
-
-        shared--;
-        printf("*** Thread `%s` is running: iteration %u shared val: %i\n", name, num,shared);
-
-        cLock->Release();
-        currentThread->Yield();
-    }
-
-    printf("!!! Thread `%s` has finished\n", name);
-    
+Add(void *x){
+  int * shared = (int *) x;
+  while(1){
+    cLock->Acquire();
+    (*shared)++;
+    printf("*** ADD : Thread `%s` is running %d\n", currentThread->GetName(),*shared);
+    if((*shared)>0) condition->Signal();
+    cLock->Release();
+    currentThread->Yield();
+  }
 }
+
+void
+Substract(void *x){
+  int * shared = (int *) x;
+  while(1){
+    cLock->Acquire();
+    while((*shared)<=0) condition->Wait();
+    (*shared)--;
+    printf("*** SUB : Thread `%s` is running %d\n", currentThread->GetName(),*shared);
+    cLock->Release();
+    currentThread->Yield();
+  }
+}
+
+
+
+void
+PrintId(void *x){
+  cLock->Acquire();
+  int * ready = (int *) x;
+  while (!(*ready)) condition->Wait();
+  cLock->Release();
+  printf("*** Thread `%s` is running %d\n", currentThread->GetName(),*ready);
+  currentThread->Yield();
+}
+
+
+void
+Go(void *x){
+  cLock->Acquire();
+  int * ready = (int *) x;
+  *ready = 1;
+  cLock->Release();
+  condition->Broadcast();
+}
+
+#endif
 /// Set up a ping-pong between several threads.
 ///
 /// Do it by launching ten threads which call `SimpleThread`, and finally
@@ -83,9 +136,11 @@ void
 ThreadTest()
 {
     DEBUG('t', "Entering thread test\n");
-    
+
+#if defined(SEMAPHORE_TEST) || defined(LOCK_TEST)
+
     char **names = new char * [4];
-    for(int i=0; i<5; i++){
+    for(int i=0; i<4; i++){
     	names[i] = new char[64];
     }
 
@@ -94,20 +149,52 @@ ThreadTest()
     strncpy(names[2], "4th", 64);
     strncpy(names[3], "5th", 64);
 
-    Thread **threads = new Thread * [5];
+    Thread **threads = new Thread * [4];
 
-    // int i=0;
-    // for(; i<2; i++){
-    // 	threads[i] = new Thread(names[i]);
-    // 	threads[i]->Fork(SimpleThread, (void *) names[i]);
-    // }
+    for(int i=0; i<4; i++){
+    	threads[i] = new Thread(names[i]);
+    	threads[i]->Fork(SimpleThread, (void *) names[i]);
+    }
 
-    threads[0] = new Thread(names[0]);
-    threads[0]->Fork(Suma,(void *) names[0]);
-    threads[1] = new Thread(names[1]);
-    threads[1]->Fork(Suma,(void *) names[1]);
+    SimpleThread((void *) "1st");
 
-    threads[2] = new Thread(names[2]);
-    threads[2]->Fork(Resta,(void *) names[2]);
-    Resta((void *) "1st");
+#endif
+
+#ifdef CONDITION_TEST_1
+
+    int n = 109;
+    int * shared = new int;
+    *shared = 0;
+    Thread **threads = new Thread * [n];
+
+    for(int i=0; i<n; i++){
+      char * c = new char [64];
+      strncpy(c, std::to_string(i).c_str(), 64);
+      threads[i] = new Thread(c);
+    	threads[i]->Fork(PrintId, (void *) shared);
+    }
+
+    Go(shared);
+
+#endif
+
+#ifdef CONDITION_TEST_2
+
+  int n = 109;
+  int * shared = new int;
+  *shared = 0;
+  Thread **threads = new Thread * [n];
+
+  for(int i=0; i<n; i++){
+    char * c = new char [64];
+    strncpy(c, std::to_string(i).c_str(), 64);
+    threads[i] = new Thread(c);
+    if(i*4>3*n)
+      threads[i]->Fork(Add, (void *) shared);
+    else
+      threads[i]->Fork(Substract, (void *) shared);
+  }
+
+#endif
+
 }
