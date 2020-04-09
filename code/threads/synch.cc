@@ -159,7 +159,7 @@ Condition::Condition(const char *debugName, Lock *conditionLock)
 
 Condition::~Condition()
 {
-    delete cLock;
+    // delete cLock;
     delete sem;
     delete x;
 }
@@ -231,8 +231,10 @@ void
 Channel::Send(int message)
 {
     lock->Acquire();
-    while(buffer) canSendCondition->Wait(); 
-    *buffer = message;
+    while(buffer != NULL){ canSendCondition->Wait();} 
+
+    buffer = new int;
+    *buffer = message; 
     receiveCondition->Signal();
     sendCondition->Wait();    
     lock->Release();
