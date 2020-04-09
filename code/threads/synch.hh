@@ -167,10 +167,36 @@ private:
 
     const char *name;
     Lock *cLock;
-    // Lock queueLock;
-    List<Thread *> *queue;
-    // Other needed fields are to be added here.
+    Semaphore *sem;
+    Lock *x;
+    int waiters;
+    
 };
 
+class Channel{
+public:
+
+    Channel(const char *debugName);
+
+    ~Channel();
+
+    const char *GetName() const;
+
+    void Send(int message);
+    void Receive(int* message);
+
+private:
+    
+    const char *name;
+
+    int *buffer;
+
+    Lock *lock;
+
+    Condition *sendCondition;
+    Condition *receiveCondition;
+    Condition *canSendCondition;
+
+};
 
 #endif

@@ -151,13 +151,17 @@ Condition::Condition(const char *debugName, Lock *conditionLock)
 {
     name = debugName;
     cLock = conditionLock;
-    queue = new List<Thread *>;
+    sem = new Semaphore("Semaforo condition", 0);
+    x = new Lock("Lock condition");
+    waiters = 0;
+    
 }
 
 Condition::~Condition()
 {
     delete cLock;
-    delete queue;
+    delete sem;
+    delete x;
 }
 
 const char *
@@ -169,37 +173,79 @@ Condition::GetName() const
 void
 Condition::Wait()
 {
+    x->Acquire();
+    waiters++;
+    x->Release();
 
-    IntStatus oldLevel = interrupt->SetLevel(INT_OFF);
-    queue->Append(currentThread);
     cLock->Release();
-    currentThread->Sleep();
+    sem->P();
     cLock->Acquire();
-    interrupt->SetLevel(oldLevel);
 }
 
 void
 Condition::Signal()
 {
+    x->Acquire();
 
-    IntStatus oldLevel = interrupt->SetLevel(INT_OFF);
-    Thread *thread = queue->Pop();
-    if (thread != nullptr) scheduler->ReadyToRun(thread);
-
-    interrupt->SetLevel(oldLevel);
+    if (waiters > 0){
+        waiters--;
+        sem->V();
+    }
+    
+    x->Release();
 }
 
 void
 Condition::Broadcast()
 {
+    x->Acquire();
 
-    IntStatus oldLevel = interrupt->SetLevel(INT_OFF);
-    Thread *thread =NULL;
-    while(!queue->IsEmpty()){
-        thread=queue->Pop();
-        scheduler->ReadyToRun(thread);
+    while (waiters > 0){
+        waiters--;
+        sem->V();
     }
 
-    interrupt->SetLevel(oldLevel);
+    x->Release();
+    
+}
 
+Channel::Channel(const char *debugName)
+{
+    name = debugName;
+    lock = new Lock("Lock channel");
+    sendCondition = new Condition("Condicion channel send", lock);
+    receiveCondition = new Condition("Condition channel receive", lock);
+    canSendCondition = new Condition("Condicion para mandar channel", lock);
+    buffer = NULL;
+}
+
+Channel::~Channel()
+{
+    delete lock;
+    delete sendCondition;
+    delete receiveCondition;
+    delete canSendCondition;
+}
+
+void
+Channel::Send(int message)
+{
+    lock->Acquire();
+    while(buffer) canSendCondition->Wait(); 
+    *buffer = message;
+    receiveCondition->Signal();
+    sendCondition->Wait();    
+    lock->Release();
+}
+
+void
+Channel::Receive(int *message)
+{
+    lock->Acquire();
+    while(buffer == NULL) receiveCondition->Wait();
+    *message = *buffer;
+    buffer = NULL;
+    canSendCondition->Signal();
+    sendCondition->Signal();
+    lock->Release();
 }
