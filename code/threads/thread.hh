@@ -39,13 +39,16 @@
 #define NACHOS_THREADS_THREAD__HH
 
 
+
 #include "lib/utility.hh"
 
 #ifdef USER_PROGRAM
 #include "machine/machine.hh"
 #include "userprog/address_space.hh"
+
 #endif
 
+class Channel;
 
 /// CPU register state to be saved on context switch.
 ///
@@ -95,6 +98,7 @@ private:
 public:
 
     /// Initialize a `Thread`.
+    Thread(const char *debugName, bool c);
     Thread(const char *debugName);
 
     /// Deallocate a Thread.
@@ -117,6 +121,8 @@ public:
     /// The thread is done executing.
     void Finish();
 
+    void Join();
+
     /// Check if thread has overflowed its stack.
     void CheckOverflow() const;
 
@@ -125,7 +131,7 @@ public:
     const char *GetName() const;
 
     void Print() const;
-
+    
 private:
     // Some of the private data for this class is listed above.
 
@@ -138,6 +144,8 @@ private:
     ThreadStatus status;
 
     const char *name;
+
+    Channel *ch;
 
     /// Allocate a stack for thread.  Used internally by `Fork`.
     void StackAllocate(VoidFunctionPtr func, void *arg);

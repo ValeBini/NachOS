@@ -40,8 +40,15 @@ IsThreadStatus(ThreadStatus s)
 /// `Thread::Fork`.
 ///
 /// * `threadName` is an arbitrary string, useful for debugging.
-Thread::Thread(const char *threadName)
+Thread::Thread(const char *threadName, bool c)
 {
+    if(c){
+
+        ch = new Channel("Join channel");
+
+        }else{
+            ch = NULL;
+        }
     name     = threadName;
     stackTop = nullptr;
     stack    = nullptr;
@@ -50,7 +57,17 @@ Thread::Thread(const char *threadName)
     space    = nullptr;
 #endif
 }
-
+Thread::Thread(const char *threadName)
+{
+    ch = NULL;
+    name     = threadName;
+    stackTop = nullptr;
+    stack    = nullptr;
+    status   = JUST_CREATED;
+#ifdef USER_PROGRAM
+    space    = nullptr;
+#endif
+}
 /// De-allocate a thread.
 ///
 /// NOTE: the current thread *cannot* delete itself directly, since it is
@@ -67,6 +84,7 @@ Thread::~Thread()
     if (stack != nullptr)
         SystemDep::DeallocBoundedArray((char *) stack,
                                        STACK_SIZE * sizeof *stack);
+    delete ch;
 }
 
 /// Invoke `(*func)(arg)`, allowing caller and callee to execute
@@ -163,9 +181,25 @@ Thread::Finish()
 
     DEBUG('t', "Finishing thread \"%s\"\n", GetName());
 
+    if(ch)ch->Send(1);
+
     threadToBeDestroyed = currentThread;
+        
     Sleep();  // Invokes `SWITCH`.
     // Not reached.
+}
+
+void
+Thread::Join(){
+    
+    int *a = new int;
+
+    if(ch){
+        
+        ch->Receive(a);
+        
+        }
+
 }
 
 /// Relinquish the CPU if any other thread is ready to run.
@@ -310,5 +344,6 @@ Thread::RestoreUserState()
     for (unsigned i = 0; i < NUM_TOTAL_REGS; i++)
         machine->WriteRegister(i, userRegisters[i]);
 }
+
 
 #endif

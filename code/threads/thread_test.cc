@@ -13,6 +13,7 @@
 
 #include "system.hh"
 #include "synch.hh"
+// #include "thread.hh"
 #include <stdio.h>
 #include <string.h>
 #include <string>
@@ -20,7 +21,8 @@
 // #define LOCK_TEST
 // #define CONDITION_TEST_1
 // #define CONDITION_TEST_2
-#define CHANNEL_TEST
+// #define CHANNEL_TEST
+#define JOIN_TEST
 
 #ifdef SEMAPHORE_TEST
 Semaphore *sem = new Semaphore("Semaforo", 3);
@@ -233,6 +235,19 @@ ThreadTest()
     Thread *newThread = new Thread(name);
     newThread->Fork(SimpleThreadSend, (void *) name);
     SimpleThreadReceive((void *) "1st");
+
+#endif
+
+#ifdef JOIN_TEST
+
+printf("INicio padre\n");
+char *name = new char [64];
+strncpy(name, "2nd", 64);
+Thread *t = new Thread("Hijo",true);
+t->Fork(SimpleThread, (void *) name);
+t->Join(); // Ac´a el hilo en ejecuci´on se bloquea
+// hasta que ‘t’ termine.
+printf("Fin padre\n");
 
 #endif
 
