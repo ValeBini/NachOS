@@ -10,9 +10,30 @@
 #ifndef NACHOS_THREADS_SCHEDULER__HH
 #define NACHOS_THREADS_SCHEDULER__HH
 
+#define N_QUEUES 10
 
 #include "thread.hh"
 #include "lib/list.hh"
+class MultiQueue {
+   public:
+    
+    MultiQueue();
+    
+    ~MultiQueue();
+    
+    void Push(unsigned int p, Thread* t);
+    
+    Thread* Pop();
+
+    bool isEmpty();
+
+    void RaisePriority(Thread * t, unsigned int p);
+   
+   private:
+
+    List<Thread*>* queues[N_QUEUES];
+
+};
 
 
 /// The following class defines the scheduler/dispatcher abstraction --
@@ -39,12 +60,16 @@ public:
     // Print contents of ready list.
     void Print();
 
+    void RaisePriority(Thread * t, unsigned int p);
+
 private:
 
     // Queue of threads that are ready to run, but not running.
-    List<Thread*> *readyList;
+    MultiQueue* readyList;
+    // List<Thread*> *readyList;
 
 };
+
 
 
 #endif

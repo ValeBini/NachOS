@@ -40,7 +40,7 @@ IsThreadStatus(ThreadStatus s)
 /// `Thread::Fork`.
 ///
 /// * `threadName` is an arbitrary string, useful for debugging.
-Thread::Thread(const char *threadName, bool c)
+Thread::Thread(const char *threadName, bool c )
 {
     if(c){
 
@@ -49,6 +49,8 @@ Thread::Thread(const char *threadName, bool c)
         }else{
             ch = NULL;
         }
+
+    priority = 5;
     name     = threadName;
     stackTop = nullptr;
     stack    = nullptr;
@@ -57,17 +59,19 @@ Thread::Thread(const char *threadName, bool c)
     space    = nullptr;
 #endif
 }
-Thread::Thread(const char *threadName)
-{
-    ch = NULL;
-    name     = threadName;
-    stackTop = nullptr;
-    stack    = nullptr;
-    status   = JUST_CREATED;
-#ifdef USER_PROGRAM
-    space    = nullptr;
-#endif
-}
+// Thread::Thread(const char *threadName)
+// {
+//     priority = 5;
+//     ch = NULL;
+//     name     = threadName;
+//     stackTop = nullptr;
+//     stack    = nullptr;
+//     status   = JUST_CREATED;
+// #ifdef USER_PROGRAM
+//     space    = nullptr;
+// #endif
+// }
+
 /// De-allocate a thread.
 ///
 /// NOTE: the current thread *cannot* delete itself directly, since it is
@@ -200,6 +204,28 @@ Thread::Join(){
         
         }
 
+}
+
+unsigned int
+Thread::GetPriority(){
+    return priority;
+}
+    
+
+void 
+Thread::SetPriority(unsigned int p){
+    priority = p;
+}
+
+void 
+Thread::ResetPriority(){
+    priority = originalPriority;
+}
+
+void 
+Thread::SetOriginalPriority(unsigned int p){
+    originalPriority = p;
+    priority = p;
 }
 
 /// Relinquish the CPU if any other thread is ready to run.

@@ -98,8 +98,8 @@ private:
 public:
 
     /// Initialize a `Thread`.
-    Thread(const char *debugName, bool c);
-    Thread(const char *debugName);
+    Thread(const char *debugName, bool c = false);
+    // Thread(const char *debugName);
 
     /// Deallocate a Thread.
     ///
@@ -122,6 +122,14 @@ public:
     void Finish();
 
     void Join();
+
+    unsigned int GetPriority();
+    
+    void SetPriority(unsigned int p);
+    
+    void ResetPriority();
+    
+    void SetOriginalPriority(unsigned int p);
 
     /// Check if thread has overflowed its stack.
     void CheckOverflow() const;
@@ -146,6 +154,10 @@ private:
     const char *name;
 
     Channel *ch;
+
+    unsigned int priority;
+
+    unsigned int originalPriority;
 
     /// Allocate a stack for thread.  Used internally by `Fork`.
     void StackAllocate(VoidFunctionPtr func, void *arg);

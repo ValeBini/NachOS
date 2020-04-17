@@ -18,11 +18,11 @@
 #include <string.h>
 #include <string>
 // #define SEMAPHORE_TEST
-// #define LOCK_TEST
+#define LOCK_TEST
 // #define CONDITION_TEST_1
 // #define CONDITION_TEST_2
 // #define CHANNEL_TEST
-#define JOIN_TEST
+// #define JOIN_TEST
 
 #ifdef SEMAPHORE_TEST
 Semaphore *sem = new Semaphore("Semaforo", 3);
@@ -184,6 +184,7 @@ ThreadTest()
 
     for(int i=0; i<4; i++){
     	threads[i] = new Thread(names[i]);
+      threads[i]->SetOriginalPriority((unsigned int) i);
     	threads[i]->Fork(SimpleThread, (void *) names[i]);
     }
 

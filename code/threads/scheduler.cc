@@ -27,7 +27,8 @@
 /// Initialize the list of ready but not running threads to empty.
 Scheduler::Scheduler()
 {
-    readyList = new List<Thread *>;
+    // readyList = new List<Thread *>;
+    readyList = new MultiQueue();
 }
 
 /// De-allocate the list of ready threads.
@@ -48,7 +49,7 @@ Scheduler::ReadyToRun(Thread *thread)
     DEBUG('t', "Putting thread %s on ready list\n", thread->GetName());
 
     thread->SetStatus(READY);
-    readyList->Append(thread);
+    readyList->Push(thread->GetPriority(),thread);
 }
 
 /// Return the next thread to be scheduled onto the CPU.
@@ -60,6 +61,10 @@ Thread *
 Scheduler::FindNextToRun()
 {
     return readyList->Pop();
+}
+void 
+Scheduler::RaisePriority(Thread * t, unsigned int p){
+    readyList->RaisePriority(t,p);
 }
 
 /// Dispatch the CPU to `nextThread`.
@@ -139,5 +144,66 @@ void
 Scheduler::Print()
 {
     printf("Ready list contents:\n");
-    readyList->Apply(ThreadPrint);
+    // readyList->Apply(ThreadPrint);
 }
+
+
+    
+MultiQueue::MultiQueue(){
+    for(int i = 0 ; i < N_QUEUES ; i++){
+        queues[i] = new List<Thread *>;
+    }
+}
+
+MultiQueue::~MultiQueue(){
+    for(int i = 0 ; i < N_QUEUES ; i++){
+        delete queues[i] ;
+    }
+}
+
+void 
+MultiQueue::Push(unsigned int p, Thread* t){
+    ASSERT(p<N_QUEUES);
+    queues[p]->Append(t);
+}
+
+Thread* 
+MultiQueue::Pop(){
+
+    // ASSERT(!this->isEmpty());
+
+    for(int i = N_QUEUES-1 ; i > -1 ; i--){
+        if(!queues[i]->IsEmpty()){
+            return queues[i]->Pop();
+        }
+    }
+    return NULL;
+}
+
+bool 
+MultiQueue::isEmpty(){
+    for(int i = 0 ; i < N_QUEUES ; i++){
+        if(!queues[i]->IsEmpty()){
+            return false;
+        }
+    }
+    return true;
+}
+
+void
+MultiQueue::RaisePriority(Thread* t, unsigned int p){
+    if(queues[t->GetPriority()]->Has(t))
+    {
+     
+        queues[t->GetPriority()]->Remove(t);   
+        t->SetPriority(p);
+        scheduler->ReadyToRun(t);
+
+    }else{
+
+        t->SetPriority(p);
+   
+    }
+
+}
+   
