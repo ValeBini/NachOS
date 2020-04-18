@@ -155,9 +155,9 @@ private:
 
     Channel *ch;
 
-    unsigned int priority;
+    unsigned int * priority;
 
-    unsigned int originalPriority;
+    unsigned int * originalPriority;
 
     /// Allocate a stack for thread.  Used internally by `Fork`.
     void StackAllocate(VoidFunctionPtr func, void *arg);

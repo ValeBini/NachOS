@@ -50,7 +50,10 @@ Thread::Thread(const char *threadName, bool c )
             ch = NULL;
         }
 
-    priority = 5;
+    priority = new unsigned int;
+    *priority = 0;
+    originalPriority = new unsigned int;
+    *originalPriority = 0;
     name     = threadName;
     stackTop = nullptr;
     stack    = nullptr;
@@ -208,24 +211,30 @@ Thread::Join(){
 
 unsigned int
 Thread::GetPriority(){
-    return priority;
+    return *priority;
 }
     
 
 void 
 Thread::SetPriority(unsigned int p){
-    priority = p;
+    *priority = p;
 }
-
+#include<iostream>
+using namespace std;
 void 
 Thread::ResetPriority(){
-    priority = originalPriority;
+    DEBUG('p',"Reseteando prioridad de %p a %p original \n",priority,originalPriority);
+
+    // *priority = *originalPriority;
+
+    DEBUG('p',"Prioridad reseateada \n");
+
 }
 
 void 
 Thread::SetOriginalPriority(unsigned int p){
-    originalPriority = p;
-    priority = p;
+    *originalPriority = p;
+    *priority = p;
 }
 
 /// Relinquish the CPU if any other thread is ready to run.

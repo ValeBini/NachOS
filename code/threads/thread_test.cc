@@ -18,11 +18,12 @@
 #include <string.h>
 #include <string>
 // #define SEMAPHORE_TEST
-#define LOCK_TEST
+// #define LOCK_TEST
 // #define CONDITION_TEST_1
 // #define CONDITION_TEST_2
 // #define CHANNEL_TEST
 // #define JOIN_TEST
+#define MULTIQUEUE_TEST
 
 #ifdef SEMAPHORE_TEST
 Semaphore *sem = new Semaphore("Semaforo", 3);
@@ -41,6 +42,9 @@ Condition *condition = new Condition("Condition",cLock);
 Channel canal("Panama");
 #endif
 
+#ifdef MULTIQUEUE_TEST
+Lock *lock = new Lock("Lock");
+#endif
 /// Loop 10 times, yielding the CPU to another ready thread each iteration.
 ///
 /// * `name` points to a string with a thread name, just for debugging
@@ -53,6 +57,10 @@ SimpleThread(void *name_)
     #endif
 
     #ifdef LOCK_TEST
+    lock->Acquire();
+    #endif
+
+    #ifdef MULTIQUEUE_TEST
     lock->Acquire();
     #endif
 
@@ -79,6 +87,10 @@ SimpleThread(void *name_)
     #ifdef LOCK_TEST
     lock->Release();
     #endif
+    #ifdef MULTIQUEUE_TEST
+    lock->Release();
+    #endif
+
 
 
 }
@@ -249,6 +261,34 @@ t->Fork(SimpleThread, (void *) name);
 t->Join(); // Ac´a el hilo en ejecuci´on se bloquea
 // hasta que ‘t’ termine.
 printf("Fin padre\n");
+
+#endif
+
+#ifdef MULTIQUEUE_TEST
+    char **names = new char * [4];
+    for(int i=0; i<4; i++){
+    	names[i] = new char[64];
+    }
+
+    strncpy(names[0], "2nd", 64);
+    strncpy(names[1], "3rd", 64);
+    strncpy(names[2], "4th", 64);
+    strncpy(names[3], "5th", 64);
+
+    Thread **threads = new Thread * [4];
+
+    for(int i=0; i<4; i++){
+    	threads[i] = new Thread(names[i],true);
+      threads[i]->SetOriginalPriority((unsigned int) (i));
+    	threads[i]->Fork(SimpleThread, (void *) names[i]);
+
+    }
+    SimpleThread((void *) "1st");
+
+    for(int i=0; i<4; i++){
+      threads[i]->Join();
+    }
+    
 
 #endif
 

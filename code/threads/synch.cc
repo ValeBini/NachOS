@@ -125,9 +125,24 @@ void
 Lock::Acquire()
 {
     ASSERT(!IsHeldByCurrentThread());
+    bool change = false;
+    if(actualThread!=NULL){
+        if(actualThread->GetPriority() < currentThread->GetPriority()){
+            DEBUG('p'," %s con prioridad %d Necesita subir prioridad por %s con prioridad %d \n",actualThread->GetName(),actualThread->GetPriority(),currentThread->GetName(),currentThread->GetPriority());
+            scheduler->RaisePriority(actualThread,currentThread->GetPriority());
+            change = true;
+        }
+    }
     semaforo->P();
+    DEBUG('s',"Siendo adquirido \n");
+    if(change){
+        actualThread->ResetPriority();
+    }
+    DEBUG('s',"Lock %s adquirido por %s \n",this->name,currentThread->GetName());
+
     actualThread = currentThread;
 }
+
 
 void
 Lock::Release()

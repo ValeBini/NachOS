@@ -64,6 +64,7 @@ Scheduler::FindNextToRun()
 }
 void 
 Scheduler::RaisePriority(Thread * t, unsigned int p){
+    DEBUG('p',"Subiendo la prioridad de %s con %d a %d \n",t->GetName(),t->GetPriority(),p);
     readyList->RaisePriority(t,p);
 }
 
@@ -194,10 +195,11 @@ void
 MultiQueue::RaisePriority(Thread* t, unsigned int p){
     if(queues[t->GetPriority()]->Has(t))
     {
-     
+
         queues[t->GetPriority()]->Remove(t);   
         t->SetPriority(p);
         scheduler->ReadyToRun(t);
+        DEBUG('p',"%s removido de la multiqueue \n",t->GetName());
 
     }else{
 
