@@ -124,7 +124,7 @@ Lock::GetName() const
 void
 Lock::Acquire()
 {
-    ASSERT( !IsHeldByCurrentThread() );
+    ASSERT(!IsHeldByCurrentThread());
     semaforo->P();
     actualThread = currentThread;
 }
@@ -132,7 +132,7 @@ Lock::Acquire()
 void
 Lock::Release()
 {
-    ASSERT( IsHeldByCurrentThread() );
+    ASSERT(IsHeldByCurrentThread());
     actualThread = NULL;
     semaforo->V();
 
@@ -159,7 +159,6 @@ Condition::Condition(const char *debugName, Lock *conditionLock)
 
 Condition::~Condition()
 {
-    // delete cLock;
     delete sem;
     delete x;
 }
@@ -173,6 +172,8 @@ Condition::GetName() const
 void
 Condition::Wait()
 {
+    ASSERT(cLock->IsHeldByCurrentThread());
+
     x->Acquire();
     waiters++;
     x->Release();
@@ -185,6 +186,8 @@ Condition::Wait()
 void
 Condition::Signal()
 {
+    ASSERT(cLock->IsHeldByCurrentThread());
+
     x->Acquire();
 
     if (waiters > 0){
@@ -198,6 +201,8 @@ Condition::Signal()
 void
 Condition::Broadcast()
 {
+    ASSERT(cLock->IsHeldByCurrentThread());
+
     x->Acquire();
 
     while (waiters > 0){
