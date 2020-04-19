@@ -125,20 +125,24 @@ void
 Lock::Acquire()
 {
     ASSERT(!IsHeldByCurrentThread());
-    bool change = false;
+    //printf("%p\n",actualThread );
+
+    Thread * changedThread = NULL;
+
     if(actualThread!=NULL){
         if(actualThread->GetPriority() < currentThread->GetPriority()){
-            DEBUG('p'," %s con prioridad %d Necesita subir prioridad por %s con prioridad %d \n",actualThread->GetName(),actualThread->GetPriority(),currentThread->GetName(),currentThread->GetPriority());
+            DEBUG('p',"(Thread:%s,Prioridad:%d) intenta tomar el lock que ya esta tomado por (Thread:%s,Prioridad:%d) \n",currentThread->GetName(),currentThread->GetPriority(),actualThread->GetName(),actualThread->GetPriority());
             scheduler->RaisePriority(actualThread,currentThread->GetPriority());
-            change = true;
+            changedThread = actualThread;
         }
     }
+
     semaforo->P();
-    DEBUG('s',"Siendo adquirido \n");
-    if(change){
-        actualThread->ResetPriority();
+    //printf("%p\n",changedThread );
+    if(changedThread && scheduler->IsThreadInReadyList(changedThread)){
+        changedThread->ResetPriority();
     }
-    DEBUG('s',"Lock %s adquirido por %s \n",this->name,currentThread->GetName());
+    DEBUG('l',"Lock %s adquirido por %s \n",this->name,currentThread->GetName());
 
     actualThread = currentThread;
 }
@@ -169,7 +173,7 @@ Condition::Condition(const char *debugName, Lock *conditionLock)
     sem = new Semaphore("Semaforo condition", 0);
     x = new Lock("Lock condition");
     waiters = 0;
-    
+
 }
 
 Condition::~Condition()
@@ -209,7 +213,7 @@ Condition::Signal()
         waiters--;
         sem->V();
     }
-    
+
     x->Release();
 }
 
@@ -226,7 +230,7 @@ Condition::Broadcast()
     }
 
     x->Release();
-    
+
 }
 
 Channel::Channel(const char *debugName)
@@ -251,12 +255,12 @@ void
 Channel::Send(int message)
 {
     lock->Acquire();
-    while(buffer != NULL){ canSendCondition->Wait();} 
+    while(buffer != NULL){ canSendCondition->Wait();}
 
     buffer = new int;
-    *buffer = message; 
+    *buffer = message;
     receiveCondition->Signal();
-    sendCondition->Wait();    
+    sendCondition->Wait();
     lock->Release();
 }
 

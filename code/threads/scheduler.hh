@@ -16,19 +16,21 @@
 #include "lib/list.hh"
 class MultiQueue {
    public:
-    
+
     MultiQueue();
-    
+
     ~MultiQueue();
-    
+
     void Push(unsigned int p, Thread* t);
-    
+
     Thread* Pop();
 
     bool isEmpty();
 
+    bool Has(Thread * t);
+
     void RaisePriority(Thread * t, unsigned int p);
-   
+
    private:
 
     List<Thread*>* queues[N_QUEUES];
@@ -61,6 +63,8 @@ public:
     void Print();
 
     void RaisePriority(Thread * t, unsigned int p);
+
+    bool IsThreadInReadyList(Thread * t);
 
 private:
 

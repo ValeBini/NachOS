@@ -124,11 +124,11 @@ public:
     void Join();
 
     unsigned int GetPriority();
-    
+
     void SetPriority(unsigned int p);
-    
+
     void ResetPriority();
-    
+
     void SetOriginalPriority(unsigned int p);
 
     /// Check if thread has overflowed its stack.
@@ -139,7 +139,7 @@ public:
     const char *GetName() const;
 
     void Print() const;
-    
+
 private:
     // Some of the private data for this class is listed above.
 
@@ -155,9 +155,9 @@ private:
 
     Channel *ch;
 
-    unsigned int * priority;
+    unsigned int priority;
 
-    unsigned int * originalPriority;
+    unsigned int originalPriority;
 
     /// Allocate a stack for thread.  Used internally by `Fork`.
     void StackAllocate(VoidFunctionPtr func, void *arg);

@@ -43,7 +43,7 @@ Channel canal("Panama");
 #endif
 
 #ifdef MULTIQUEUE_TEST
-Lock *lock = new Lock("Lock");
+Lock *lock = new Lock("1");
 #endif
 /// Loop 10 times, yielding the CPU to another ready thread each iteration.
 ///
@@ -283,12 +283,17 @@ printf("Fin padre\n");
     	threads[i]->Fork(SimpleThread, (void *) names[i]);
 
     }
+
+    lock->Acquire();
+    currentThread->Yield();
+    lock->Release();
+
+    //printf("%d\n",currentThread->GetPriority());
+
+    SimpleThread((void *) "1st");
+    currentThread->Yield();
     SimpleThread((void *) "1st");
 
-    for(int i=0; i<4; i++){
-      threads[i]->Join();
-    }
-    
 
 #endif
 

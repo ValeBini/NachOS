@@ -62,7 +62,7 @@ Scheduler::FindNextToRun()
 {
     return readyList->Pop();
 }
-void 
+void
 Scheduler::RaisePriority(Thread * t, unsigned int p){
     DEBUG('p',"Subiendo la prioridad de %s con %d a %d \n",t->GetName(),t->GetPriority(),p);
     readyList->RaisePriority(t,p);
@@ -148,8 +148,15 @@ Scheduler::Print()
     // readyList->Apply(ThreadPrint);
 }
 
+bool
+Scheduler::IsThreadInReadyList(Thread * t)
+{
+    return readyList->Has(t);
+}
 
-    
+
+
+
 MultiQueue::MultiQueue(){
     for(int i = 0 ; i < N_QUEUES ; i++){
         queues[i] = new List<Thread *>;
@@ -162,13 +169,23 @@ MultiQueue::~MultiQueue(){
     }
 }
 
-void 
+bool
+MultiQueue::Has(Thread * t){
+  for(int i = 0; i<N_QUEUES; i++){
+    if(queues[i]->Has(t)){
+      return true;
+    }
+  }
+  return false;
+}
+
+void
 MultiQueue::Push(unsigned int p, Thread* t){
     ASSERT(p<N_QUEUES);
     queues[p]->Append(t);
 }
 
-Thread* 
+Thread*
 MultiQueue::Pop(){
 
     // ASSERT(!this->isEmpty());
@@ -181,7 +198,7 @@ MultiQueue::Pop(){
     return NULL;
 }
 
-bool 
+bool
 MultiQueue::isEmpty(){
     for(int i = 0 ; i < N_QUEUES ; i++){
         if(!queues[i]->IsEmpty()){
@@ -193,19 +210,17 @@ MultiQueue::isEmpty(){
 
 void
 MultiQueue::RaisePriority(Thread* t, unsigned int p){
-    if(queues[t->GetPriority()]->Has(t))
-    {
+    if(queues[t->GetPriority()]->Has(t)){
 
-        queues[t->GetPriority()]->Remove(t);   
+        queues[t->GetPriority()]->Remove(t);
+        DEBUG('p',"%s removido de la multiqueue \n",t->GetName(),t->GetName());
         t->SetPriority(p);
+        DEBUG('p',"Ahora %s tiene prioridad %d \n",t->GetName(),t->GetPriority());
         scheduler->ReadyToRun(t);
-        DEBUG('p',"%s removido de la multiqueue \n",t->GetName());
 
-    }else{
-
+    } else {
         t->SetPriority(p);
-   
+        DEBUG('p',"Ahora %s tiene prioridad %d \n",t->GetName(),t->GetPriority());
     }
 
 }
-   
