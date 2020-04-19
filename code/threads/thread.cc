@@ -190,6 +190,8 @@ Thread::Finish()
 
     threadToBeDestroyed = currentThread;
 
+    scheduler->AddToFinished(currentThread);
+
     Sleep();  // Invokes `SWITCH`.
     // Not reached.
 }
@@ -217,8 +219,7 @@ void
 Thread::SetPriority(unsigned int p){
     priority = p;
 }
-#include<iostream>
-using namespace std;
+
 void
 Thread::ResetPriority(){
     DEBUG('p',"Reseteando prioridad de %d a %d original \n",priority,originalPriority);

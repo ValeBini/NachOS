@@ -31,6 +31,8 @@ class MultiQueue {
 
     void RaisePriority(Thread * t, unsigned int p);
 
+    void ApplyToQueue(void (*func)(Thread *), int i);
+
    private:
 
     List<Thread*>* queues[N_QUEUES];
@@ -66,12 +68,15 @@ public:
 
     bool IsThreadInReadyList(Thread * t);
 
+    void AddToFinished(Thread * t);
+
+    bool IsFinished(Thread * t);
+
 private:
 
-    // Queue of threads that are ready to run, but not running.
     MultiQueue* readyList;
-    // List<Thread*> *readyList;
 
+    List <Thread *> *finishedThreads;
 };
 
 

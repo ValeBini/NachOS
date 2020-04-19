@@ -138,8 +138,10 @@ Lock::Acquire()
     }
 
     semaforo->P();
-    //printf("%p\n",changedThread );
-    if(changedThread && scheduler->IsThreadInReadyList(changedThread)){
+    
+    ASSERT(!actualThread);
+
+    if(changedThread && !(scheduler->IsFinished(changedThread))){
         changedThread->ResetPriority();
     }
     DEBUG('l',"Lock %s adquirido por %s \n",this->name,currentThread->GetName());
@@ -236,10 +238,10 @@ Condition::Broadcast()
 Channel::Channel(const char *debugName)
 {
     name = debugName;
-    lock = new Lock("Lock channel");
-    sendCondition = new Condition("Condicion channel send", lock);
-    receiveCondition = new Condition("Condition channel receive", lock);
-    canSendCondition = new Condition("Condicion para mandar channel", lock);
+    lock = new Lock("channelLock");
+    sendCondition = new Condition("channelConditionSend", lock);
+    receiveCondition = new Condition("channelConditionReceive", lock);
+    canSendCondition = new Condition("channelConditionCanSend", lock);
     buffer = NULL;
 }
 

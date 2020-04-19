@@ -284,16 +284,20 @@ printf("Fin padre\n");
 
     }
 
-    lock->Acquire();
-    currentThread->Yield();
-    lock->Release();
-
-    //printf("%d\n",currentThread->GetPriority());
-
-    SimpleThread((void *) "1st");
-    currentThread->Yield();
     SimpleThread((void *) "1st");
 
+    for(int i=0; i<4; i++){
+      threads[i]->Join();
+    }
+    
+    // currentThread->Yield();
+    // SimpleThread((void *) "1st");
+
+    // El main tiene prioridad 0, ya que no se le asigna explicitamente y es 0 por defecto.
+    // Si se comentan los Join, el main termina y se puede observar como la prioridad no es
+    // reseteada, ya que el hilo ya no existe.
+    // Si se descomentan las lineas 293 y 294 se puede observar como el 1st se vuelve a ejecutar
+    // con su prioridad original, ya que fue reseteada.
 
 #endif
 

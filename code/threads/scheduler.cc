@@ -27,14 +27,15 @@
 /// Initialize the list of ready but not running threads to empty.
 Scheduler::Scheduler()
 {
-    // readyList = new List<Thread *>;
     readyList = new MultiQueue();
+    finishedThreads = new List <Thread *>;
 }
 
 /// De-allocate the list of ready threads.
 Scheduler::~Scheduler()
 {
     delete readyList;
+    delete finishedThreads;
 }
 
 /// Mark a thread as ready, but not running.
@@ -62,6 +63,7 @@ Scheduler::FindNextToRun()
 {
     return readyList->Pop();
 }
+
 void
 Scheduler::RaisePriority(Thread * t, unsigned int p){
     DEBUG('p',"Subiendo la prioridad de %s con %d a %d \n",t->GetName(),t->GetPriority(),p);
@@ -145,7 +147,11 @@ void
 Scheduler::Print()
 {
     printf("Ready list contents:\n");
-    // readyList->Apply(ThreadPrint);
+    for(int i=0; i < N_QUEUES; i++){
+        printf("Prioridad: %d: \n", i);
+        readyList->ApplyToQueue(ThreadPrint,i);
+        printf("\n");
+    }
 }
 
 bool
@@ -154,8 +160,17 @@ Scheduler::IsThreadInReadyList(Thread * t)
     return readyList->Has(t);
 }
 
+void
+Scheduler::AddToFinished(Thread * t)
+{
+    finishedThreads->Append(t);
+}
 
-
+bool
+Scheduler::IsFinished(Thread * t)
+{
+    return (finishedThreads->Has(t));
+}
 
 MultiQueue::MultiQueue(){
     for(int i = 0 ; i < N_QUEUES ; i++){
@@ -187,8 +202,6 @@ MultiQueue::Push(unsigned int p, Thread* t){
 
 Thread*
 MultiQueue::Pop(){
-
-    // ASSERT(!this->isEmpty());
 
     for(int i = N_QUEUES-1 ; i > -1 ; i--){
         if(!queues[i]->IsEmpty()){
@@ -222,5 +235,12 @@ MultiQueue::RaisePriority(Thread* t, unsigned int p){
         t->SetPriority(p);
         DEBUG('p',"Ahora %s tiene prioridad %d \n",t->GetName(),t->GetPriority());
     }
+
+}
+
+void
+MultiQueue::ApplyToQueue(void (*func)(Thread *), int i){
+   
+    queues[i]->Apply(func);
 
 }
