@@ -100,6 +100,11 @@ SyscallHandler(ExceptionType _et)
                       FILE_NAME_MAX_LEN);
 
             DEBUG('e', "`Create` requested for file `%s`.\n", filename);
+            
+            if(!fileSystem->Create(filename,0))
+                DEBUG('e', "Error: no se pudo crear el archivo.\n");
+
+
             break;
         }
 
