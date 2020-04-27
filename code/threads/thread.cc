@@ -49,7 +49,9 @@ Thread::Thread(const char *threadName, bool c )
         }else{
             ch = NULL;
         }
-
+    openFiles = new Table<OpenFile*>;
+    // openFiles->Add(CONSOLE_INPUT);
+    // openFiles->Add(CONSOLE_OUTPUT);
     priority = 0;
     originalPriority = 0;
     name     = threadName;
@@ -90,6 +92,7 @@ Thread::~Thread()
         SystemDep::DeallocBoundedArray((char *) stack,
                                        STACK_SIZE * sizeof *stack);
     delete ch;
+    delete openFiles;
 }
 
 /// Invoke `(*func)(arg)`, allowing caller and callee to execute

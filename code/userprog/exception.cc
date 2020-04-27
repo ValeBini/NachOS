@@ -29,6 +29,8 @@
 
 #include <stdio.h>
 
+#include <string.h>
+
 
 static void
 IncrementPC()
@@ -101,9 +103,30 @@ SyscallHandler(ExceptionType _et)
 
             DEBUG('e', "`Create` requested for file `%s`.\n", filename);
             
-            if(!fileSystem->Create(filename,0))
-                DEBUG('e', "Error: no se pudo crear el archivo.\n");
+            ASSERT(fileSystem->Create(filename,1000));
 
+            break;
+        }
+        case SC_OPEN: {
+            int filenameAddr = machine->ReadRegister(4);
+            if (filenameAddr == 0)
+                DEBUG('e', "Error: address to filename string is null.\n");
+
+            char filename[FILE_NAME_MAX_LEN + 1];
+            if (!ReadStringFromUser(filenameAddr, filename, sizeof filename))
+                DEBUG('e', "Error: filename string too long (maximum is %u bytes).\n",
+                      FILE_NAME_MAX_LEN);
+
+            DEBUG('e', "`Open` requested for file `%s`.\n", filename);
+            
+            OpenFile *openFile = fileSystem->Open(filename);
+            ASSERT(openFile!=nullptr);
+            int index = currentThread->openFiles->Add(openFile);
+            ASSERT(index != -1);
+            machine->WriteRegister(2,index);
+
+
+            DEBUG('e', "`Open` finished for file `%s`.\n", filename);
 
             break;
         }
@@ -111,6 +134,62 @@ SyscallHandler(ExceptionType _et)
         case SC_CLOSE: {
             int fid = machine->ReadRegister(4);
             DEBUG('e', "`Close` requested for id %u.\n", fid);
+
+            ASSERT(currentThread->openFiles->HasKey(fid));
+            OpenFile *openFile = currentThread->openFiles->Get(fid);
+            currentThread->openFiles->Remove(fid);
+            delete openFile;
+
+
+            DEBUG('e', "`Close` finished for id `%u`.\n", fid);
+            break;
+        }
+
+        case SC_WRITE: {
+            
+            int bufferAddr = machine->ReadRegister(4);
+            int size = machine->ReadRegister(5);
+            OpenFileId openFileId = machine->ReadRegister(6);
+
+            if (bufferAddr == 0)
+                DEBUG('e', "Error: address to buffer is null.\n");
+            
+            char buffer[size+1];
+
+            ReadStringFromUser(bufferAddr, buffer, size+1);
+
+            DEBUG('e', "`Write` requested in userAddr %d buffer %s , with size %d. And openfileId %d \n",bufferAddr,buffer,size,openFileId);
+            ASSERT(currentThread->openFiles->HasKey(openFileId));
+            OpenFile *file = currentThread->openFiles->Get(openFileId);
+            file->Write(buffer,size);
+
+            break;
+        }
+
+        case SC_READ:{
+
+            int bufferAddr = machine->ReadRegister(4);
+            int size = machine->ReadRegister(5);
+            OpenFileId openFileId = machine->ReadRegister(6);
+ 
+            DEBUG('e', "`Read` requested in userAddr %d buffer from openfileId %d \n",bufferAddr,openFileId);
+
+            if (bufferAddr == 0)
+                DEBUG('e', "Error: address to buffer is null.\n");
+      
+            char buffer[size+1];
+
+            ASSERT(currentThread->openFiles->HasKey(openFileId));
+            OpenFile *file = currentThread->openFiles->Get(openFileId);
+            file->Read(buffer,size);     
+
+
+
+            WriteStringToUser(buffer, bufferAddr);
+
+
+            DEBUG('e', "`Read` finished in userAddr %d buffer from openfileId %d. Read: %s Size: %u \n",bufferAddr,openFileId,buffer,strlen(buffer));
+
             break;
         }
 

@@ -38,13 +38,16 @@
 #ifndef NACHOS_THREADS_THREAD__HH
 #define NACHOS_THREADS_THREAD__HH
 
-
+#include "lib/table.hh"
+#include "userprog/syscall.h"
 
 #include "lib/utility.hh"
+#include "filesys/open_file.hh"
 
 #ifdef USER_PROGRAM
 #include "machine/machine.hh"
 #include "userprog/address_space.hh"
+
 
 #endif
 
@@ -139,6 +142,8 @@ public:
     const char *GetName() const;
 
     void Print() const;
+
+    Table<OpenFile*>* openFiles;
 
 private:
     // Some of the private data for this class is listed above.
