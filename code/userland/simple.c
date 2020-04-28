@@ -11,25 +11,10 @@
 
 #include "syscall.h"
 
-#include <stdio.h>
+
 int
 main(void)
 {
-    char buffer[12];
-    Create("test.txt");
-    OpenFileId o = Open("test.txt");
-    Write("Hello world\n",12,o);
-    Close(o);
-
-    o = Open("test.txt");
-    Read(buffer,12,o);
-    Close(o);
-    
-    // printf("%s\n",buffer);
-    Create("test1.txt");
-    o = Open("test1.txt");
-    Write(buffer,12,o);
-    Close(o);
-    Halt();
-    return 0;
+    int a = 0;
+    return (a+1);
 }

@@ -93,13 +93,20 @@ SyscallHandler(ExceptionType _et)
 
         case SC_CREATE: {
             int filenameAddr = machine->ReadRegister(4);
-            if (filenameAddr == 0)
+            if (filenameAddr == 0) {
                 DEBUG('e', "Error: address to filename string is null.\n");
+                machine->WriteRegister(2, -1);
+                break;
+            }
+                
 
             char filename[FILE_NAME_MAX_LEN + 1];
-            if (!ReadStringFromUser(filenameAddr, filename, sizeof filename))
+            if (!ReadStringFromUser(filenameAddr, filename, sizeof filename)) {
                 DEBUG('e', "Error: filename string too long (maximum is %u bytes).\n",
                       FILE_NAME_MAX_LEN);
+                machine->WriteRegister(2, -1);
+                break;
+            }
 
             DEBUG('e', "`Create` requested for file `%s`.\n", filename);
             
@@ -107,24 +114,37 @@ SyscallHandler(ExceptionType _et)
 
             break;
         }
+
         case SC_OPEN: {
             int filenameAddr = machine->ReadRegister(4);
-            if (filenameAddr == 0)
+            if (filenameAddr == 0){
                 DEBUG('e', "Error: address to filename string is null.\n");
+                machine->WriteRegister(2, -1);
+                break;
+            }
 
             char filename[FILE_NAME_MAX_LEN + 1];
-            if (!ReadStringFromUser(filenameAddr, filename, sizeof filename))
+            if (!ReadStringFromUser(filenameAddr, filename, sizeof filename)) {
                 DEBUG('e', "Error: filename string too long (maximum is %u bytes).\n",
                       FILE_NAME_MAX_LEN);
+                machine->WriteRegister(2, -1);
+                break;
+            }
 
             DEBUG('e', "`Open` requested for file `%s`.\n", filename);
             
             OpenFile *openFile = fileSystem->Open(filename);
             ASSERT(openFile!=nullptr);
             int index = currentThread->openFiles->Add(openFile);
-            ASSERT(index != -1);
-            machine->WriteRegister(2,index);
+            
+            if(index == -1) {
+                DEBUG('e', "Error: opened files' table is full.\n");
+                machine->WriteRegister(2, -1);
+                delete openFile;
+                break;
+            }
 
+            machine->WriteRegister(2,index);
 
             DEBUG('e', "`Open` finished for file `%s`.\n", filename);
 
@@ -135,13 +155,18 @@ SyscallHandler(ExceptionType _et)
             int fid = machine->ReadRegister(4);
             DEBUG('e', "`Close` requested for id %u.\n", fid);
 
-            ASSERT(currentThread->openFiles->HasKey(fid));
+            if(!currentThread->openFiles->HasKey(fid)){
+                DEBUG('e', "Error: openFileId doesn't exist.\n");
+                machine->WriteRegister(2, -1);
+                break;
+            }
+
             OpenFile *openFile = currentThread->openFiles->Get(fid);
             currentThread->openFiles->Remove(fid);
             delete openFile;
 
-
             DEBUG('e', "`Close` finished for id `%u`.\n", fid);
+            machine->WriteRegister(2, 0);
             break;
         }
 
@@ -151,18 +176,38 @@ SyscallHandler(ExceptionType _et)
             int size = machine->ReadRegister(5);
             OpenFileId openFileId = machine->ReadRegister(6);
 
-            if (bufferAddr == 0)
+            if (bufferAddr == 0) {
                 DEBUG('e', "Error: address to buffer is null.\n");
+                machine->WriteRegister(2, -1);
+                break;
+            }
             
             char buffer[size+1];
-
-            ReadStringFromUser(bufferAddr, buffer, size+1);
+            ReadBufferFromUser(bufferAddr, buffer, size);
+            buffer[size] = 0;
 
             DEBUG('e', "`Write` requested in userAddr %d buffer %s , with size %d. And openfileId %d \n",bufferAddr,buffer,size,openFileId);
-            ASSERT(currentThread->openFiles->HasKey(openFileId));
-            OpenFile *file = currentThread->openFiles->Get(openFileId);
-            file->Write(buffer,size);
+           
+            if(openFileId == CONSOLE_OUTPUT) {
+                for (int i = 0; i < size; i++) {
+                    synchConsole->PutChar(buffer[i]);
+                }
+            }
+            else {
+                if(!currentThread->openFiles->HasKey(openFileId)){
+                    DEBUG('e', "Error: openFileId doesn't exist.\n");
+                    machine->WriteRegister(2, -1);
+                    break;
+                }
+            
+                // for (int i=0; i<size; i++)
+                //     DEBUG('e', "%d\n", (int)buffer[i]);
 
+                OpenFile *file = currentThread->openFiles->Get(openFileId);
+                file->Write(buffer,size);
+            }
+            
+            machine->WriteRegister(2, size);
             break;
         }
 
@@ -174,19 +219,43 @@ SyscallHandler(ExceptionType _et)
  
             DEBUG('e', "`Read` requested in userAddr %d buffer from openfileId %d \n",bufferAddr,openFileId);
 
-            if (bufferAddr == 0)
+            if (bufferAddr == 0) {
                 DEBUG('e', "Error: address to buffer is null.\n");
+                machine->WriteRegister(2, -1);
+                break;
+            }
       
             char buffer[size+1];
 
-            ASSERT(currentThread->openFiles->HasKey(openFileId));
-            OpenFile *file = currentThread->openFiles->Get(openFileId);
-            file->Read(buffer,size);     
+            if(openFileId == CONSOLE_INPUT) {
+                int i;
+                for(i = 0; i < size; i++) {
+                    buffer[i] = synchConsole->GetChar();
+                    if(buffer[i] == '\n') 
+                        break;
+                }
+                buffer[i] = 0;
+                machine->WriteRegister(2, i);
+            }
+            else {
+                if(!currentThread->openFiles->HasKey(openFileId)){
+                    DEBUG('e', "Error: openFileId doesn't exist.\n");
+                    machine->WriteRegister(2, -1);
+                    break;
+                }
 
+                OpenFile *file = currentThread->openFiles->Get(openFileId);
+                int n = file->Read(buffer,size);     
 
+                buffer[size] = 0;
 
+                // for (int i=0; i<size; i++)
+                //     DEBUG('e', "%d\n", (int)buffer[i]);
+                
+                machine->WriteRegister(2, n);
+            }
+            
             WriteStringToUser(buffer, bufferAddr);
-
 
             DEBUG('e', "`Read` finished in userAddr %d buffer from openfileId %d. Read: %s Size: %u \n",bufferAddr,openFileId,buffer,strlen(buffer));
 

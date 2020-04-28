@@ -50,8 +50,8 @@ Thread::Thread(const char *threadName, bool c )
             ch = NULL;
         }
     openFiles = new Table<OpenFile*>;
-    // openFiles->Add(CONSOLE_INPUT);
-    // openFiles->Add(CONSOLE_OUTPUT);
+    openFiles->Add(NULL);
+    openFiles->Add(NULL);
     priority = 0;
     originalPriority = 0;
     name     = threadName;
