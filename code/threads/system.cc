@@ -9,6 +9,7 @@
 #include "system.hh"
 #include "preemptive.hh"
 
+
 #ifdef USER_PROGRAM
 #include "userprog/debugger.hh"
 #include "userprog/exception.hh"
@@ -21,6 +22,7 @@
 /// This defines *all* of the global data structures used by Nachos.
 ///
 /// These are all initialized and de-allocated by this file.
+
 
 Thread *currentThread;        ///< The thread we are running now.
 Thread *threadToBeDestroyed;  ///< The thread that just finished.
@@ -45,6 +47,9 @@ SynchDisk *synchDisk;
 #ifdef USER_PROGRAM  // Requires either *FILESYS* or *FILESYS_STUB*.
 Machine *machine;  ///< User program memory and registers.
 SynchConsole *synchConsole; // Synchronized Console
+Table<Thread *> *activeThreads; // Active Threads
+Bitmap * pageMap; // Page Bit Map
+
 #endif
 
 #ifdef NETWORK
@@ -102,6 +107,7 @@ Initialize(int argc, char **argv)
 
 #ifdef USER_PROGRAM
     bool debugUserProg = false;  // Single step user program.
+    activeThreads = new Table <Thread *>();
 #endif
 #ifdef FILESYS_NEEDED
     bool format = false;  // Format disk.
@@ -187,6 +193,9 @@ Initialize(int argc, char **argv)
     machine = new Machine(d);  // This must come first.
     SetExceptionHandlers();
     synchConsole = new SynchConsole(NULL,NULL);
+    DEBUG('i',"system.cc");
+    
+    pageMap = new Bitmap(NUM_PHYS_PAGES);
 #endif
 
 #ifdef FILESYS
@@ -218,6 +227,8 @@ Cleanup()
 #ifdef USER_PROGRAM
     delete machine;
     delete synchConsole;
+    delete activeThreads;
+    delete pageMap;
 #endif
 
 #ifdef FILESYS_NEEDED

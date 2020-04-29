@@ -20,11 +20,13 @@ main(void)
 
         buffer[--i] = '\0';
 
-        if (i > 0) {
-            newProc = Exec(buffer);
-            Join(newProc);
-        }
+        // if (i > 0) {
+        //     newProc = Exec(buffer);
+        //     Halt();
+        //     //Join(newProc);
+        // }
     }
 
-    return -1;
+    Halt();
+    //return -1;
 }

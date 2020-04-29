@@ -17,8 +17,8 @@
 
 /// Miscellaneous useful routines.
 
-//#define min(a, b)  (((a) < (b)) ? (a) : (b))
-//#define max(a, b)  (((a) > (b)) ? (a) : (b))
+#define min(a, b)  (((a) < (b)) ? (a) : (b))
+#define max(a, b)  (((a) > (b)) ? (a) : (b))
 
 /// Typedef for host memory references, expressed in numerical (integer)
 /// form.
@@ -59,7 +59,6 @@ DivRoundUp(T n, T s)
 typedef void (*VoidFunctionPtr)(void *arg);
 
 typedef void (*VoidNoArgFunctionPtr)();
-
 
 // Include interface that isolates us from the host machine system library.
 // Requires definition of `VoidFunctionPtr`.

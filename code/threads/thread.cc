@@ -49,9 +49,7 @@ Thread::Thread(const char *threadName, bool c )
         }else{
             ch = NULL;
         }
-    openFiles = new Table<OpenFile*>;
-    openFiles->Add(NULL);
-    openFiles->Add(NULL);
+
     priority = 0;
     originalPriority = 0;
     name     = threadName;
@@ -59,6 +57,10 @@ Thread::Thread(const char *threadName, bool c )
     stack    = nullptr;
     status   = JUST_CREATED;
 #ifdef USER_PROGRAM
+    openFiles = new Table <OpenFile*>;
+    openFiles->Add(NULL);
+    openFiles->Add(NULL);
+    threadId = activeThreads->Add(this);
     space    = nullptr;
 #endif
 }
@@ -92,7 +94,10 @@ Thread::~Thread()
         SystemDep::DeallocBoundedArray((char *) stack,
                                        STACK_SIZE * sizeof *stack);
     delete ch;
+
+#ifdef USER_PROGRAM
     delete openFiles;
+#endif
 }
 
 /// Invoke `(*func)(arg)`, allowing caller and callee to execute
@@ -199,7 +204,7 @@ Thread::Finish()
     // Not reached.
 }
 
-void
+int
 Thread::Join(){
 
     int *a = new int;
@@ -209,6 +214,8 @@ Thread::Join(){
         ch->Receive(a);
 
         }
+    
+    return *a;
 
 }
 

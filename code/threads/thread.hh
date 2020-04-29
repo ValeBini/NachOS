@@ -124,7 +124,7 @@ public:
     /// The thread is done executing.
     void Finish();
 
-    void Join();
+    int Join();
 
     unsigned int GetPriority();
 
@@ -143,7 +143,9 @@ public:
 
     void Print() const;
 
-    Table<OpenFile*>* openFiles;
+    
+
+    
 
 private:
     // Some of the private data for this class is listed above.
@@ -174,6 +176,7 @@ private:
     /// registers -- one for its state while executing user code, one for its
     /// state while executing kernel code.
     int userRegisters[NUM_TOTAL_REGS];
+    
 
 public:
 
@@ -185,6 +188,8 @@ public:
 
     // User code this thread is running.
     AddressSpace *space;
+    SpaceId threadId;
+    Table<OpenFile*>* openFiles;
 #endif
 };
 

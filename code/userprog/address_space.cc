@@ -23,14 +23,14 @@ AddressSpace::AddressSpace(OpenFile *executable_file)
     Executable exe (executable_file);
     ASSERT(exe.CheckMagic());
 
-    // How big is address space?
+    // How big is address spa
 
     unsigned size = exe.GetSize() + USER_STACK_SIZE;
       // We need to increase the size to leave room for the stack.
     numPages = DivRoundUp(size, PAGE_SIZE);
     size = numPages * PAGE_SIZE;
 
-    ASSERT(numPages <= NUM_PHYS_PAGES);
+    ASSERT(numPages <= pageMap->CountClear());
       // Check we are not trying to run anything too big -- at least until we
       // have virtual memory.
 
@@ -43,7 +43,9 @@ AddressSpace::AddressSpace(OpenFile *executable_file)
     for (unsigned i = 0; i < numPages; i++) {
         pageTable[i].virtualPage  = i;
           // For now, virtual page number = physical page number.
-        pageTable[i].physicalPage = i;
+        int newPage = pageMap->Find();
+        ASSERT( newPage != -1);
+        pageTable[i].physicalPage = (unsigned int)newPage;
         pageTable[i].valid        = true;
         pageTable[i].use          = false;
         pageTable[i].dirty        = false;
@@ -56,8 +58,10 @@ AddressSpace::AddressSpace(OpenFile *executable_file)
 
     // Zero out the entire address space, to zero the unitialized data
     // segment and the stack segment.
-    memset(mainMemory, 0, size);
 
+    for (unsigned i = 0; i < numPages; i++) {
+      memset(&mainMemory[pageTable[i].physicalPage*PAGE_SIZE],0,PAGE_SIZE);
+    }
     // Then, copy in the code and data segments into memory.
     uint32_t codeSize = exe.GetCodeSize();
     uint32_t initDataSize = exe.GetInitDataSize();
@@ -65,16 +69,42 @@ AddressSpace::AddressSpace(OpenFile *executable_file)
         uint32_t virtualAddr = exe.GetCodeAddr();
         DEBUG('a', "Initializing code segment, at 0x%X, size %u\n",
               virtualAddr, codeSize);
-        exe.ReadCodeBlock(&mainMemory[virtualAddr], codeSize, 0);
+        uint32_t virtualPage    = virtualAddr/PAGE_SIZE;
+        uint32_t offset        = virtualAddr%PAGE_SIZE;
+        uint32_t physicalPage  = pageTable[virtualPage].physicalPage;
+        uint32_t sizeToRead;
+        
+        sizeToRead = min(PAGE_SIZE-offset,codeSize);
+        exe.ReadCodeBlock(&mainMemory[physicalPage*PAGE_SIZE], sizeToRead, offset);
+        virtualPage++;
+        for(;codeSize >= 0; codeSize -= PAGE_SIZE, virtualPage++){
+          sizeToRead = min(cdPAGE_SIZE,codeSize);
+          exe.ReadCodeBlock(&mainMemory[pageTable[virtualPage].physicalPage*PAGE_SIZE], sizeToRead, 0);
+        }
     }
     if (initDataSize > 0) {
         uint32_t virtualAddr = exe.GetInitDataAddr();
         DEBUG('a', "Initializing data segment, at 0x%X, size %u\n",
               virtualAddr, initDataSize);
-        exe.ReadDataBlock(&mainMemory[virtualAddr], initDataSize, 0);
+
+        uint32_t virtualPage    = virtualAddr/PAGE_SIZE;
+        uint32_t offset        = virtualAddr%PAGE_SIZE;
+        uint32_t physicalPage  = pageTable[virtualPage].physicalPage;
+        uint32_t sizeToRead;
+        
+        sizeToRead = min(PAGE_SIZE-offset, initDataSize);
+        exe.ReadDataBlock(&mainMemory[physicalPage*PAGE_SIZE], sizeToRead, offset);
+        virtualPage++;
+        for(;codeSize >= 0; initDataSize -= PAGE_SIZE, virtualPage++){
+          sizeToRead = min(PAGE_SIZE, initDataSize);
+          sizeToRead = min(PAGE_SIZE, initDataSize);
+          sizeToRead = min(PAGE_SIZE, initDataSize);
+          exe.ReadDataBlock(&mainMemory[pageTable[virtualPage].physicalPage*PAGE_SIZE], sizeToRead, 0);
+        }
     }
 
 }
+
 
 /// Deallocate an address space.
 ///

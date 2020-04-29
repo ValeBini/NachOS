@@ -63,6 +63,15 @@ DefaultHandler(ExceptionType et)
     ASSERT(false);
 }
 
+
+void newThread(void *name){
+
+    currentThread->space->InitRegisters();  // Set the initial register values.
+    currentThread->space->RestoreState();   // Load page table register.
+
+    machine->Run();  // Jump to the user progam.
+}
+
 /// Handle a system call exception.
 ///
 /// * `et` is the kind of exception.  The list of possible exceptions is in
@@ -265,6 +274,7 @@ SyscallHandler(ExceptionType _et)
         case SC_EXEC:{
 
             int filenameAddr = machine->ReadRegister(4);
+
             if (filenameAddr == 0){
                 DEBUG('e', "Error: address to filename string is null.\n");
                 machine->WriteRegister(2, -1);
@@ -285,35 +295,33 @@ SyscallHandler(ExceptionType _et)
             OpenFile *executable = fileSystem->Open(filename);
             if (executable == nullptr) {
                 DEBUG('e',"Unable to open file %s\n", filename);
+                machine->WriteRegister(2, -1);
                 break;
             }
 
             Thread * thread = new Thread(filename,true);
 
-
             AddressSpace *space = new AddressSpace(executable);
-            delete executable;
-
+            
             thread->space = space;
 
-            currentThread->space = space;
+            SpaceId spaceId = thread->threadId;
 
-            //thread->Fork(SimpleThread, (void *) names[i]);
+            thread->Fork(newThread,nullptr);
 
-            space->InitRegisters();  // Set the initial register values.
-            space->RestoreState();   // Load page table register.
+            delete executable;
 
-            machine->Run();  // Jump to the user progam.
-            ASSERT(false);   // `machine->Run` never returns; the address space
-                             // exits by doing the system call `Exit`.
-
-            machine->WriteRegister(2, size);
+            machine->WriteRegister(2, spaceId);
 
             break;
         }
 
         case SC_JOIN:{
+            SpaceId id = machine->ReadRegister(4);
 
+            int n = activeThreads->Get(id)->Join();
+
+            machine->WriteRegister(2, n);
 
             break;
         }
@@ -330,17 +338,8 @@ SyscallHandler(ExceptionType _et)
 
     }
 
+
     IncrementPC();
-}
-
-
-
-void newThread(){
-
-    space->InitRegisters();  // Set the initial register values.
-    space->RestoreState();   // Load page table register.
-
-    machine->Run();  // Jump to the user progam.
 }
 
 

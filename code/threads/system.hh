@@ -12,6 +12,7 @@
 #include "thread.hh"
 #include "scheduler.hh"
 #include "lib/utility.hh"
+#include "lib/bitmap.hh"
 #include "machine/interrupt.hh"
 #include "machine/statistics.hh"
 #include "machine/timer.hh"
@@ -37,6 +38,8 @@ extern Timer *timer;                 ///< The hardware alarm clock.
 #include "machine/machine.hh"
 extern Machine *machine;  // User program memory and registers.
 extern SynchConsole *synchConsole; // Synchronized Console.
+extern Table<Thread *> *activeThreads;
+extern Bitmap * pageMap;
 #endif
 
 #ifdef FILESYS_NEEDED  // *FILESYS* or *FILESYS_STUB*.

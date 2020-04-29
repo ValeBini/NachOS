@@ -11,4 +11,5 @@ int main(){
 	Write("\n", 1, CONSOLE_OUTPUT);
 	// Close(id);
 	Halt();
+
 }
