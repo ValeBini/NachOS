@@ -262,6 +262,68 @@ SyscallHandler(ExceptionType _et)
             break;
         }
 
+        case SC_EXEC:{
+
+            int filenameAddr = machine->ReadRegister(4);
+            if (filenameAddr == 0){
+                DEBUG('e', "Error: address to filename string is null.\n");
+                machine->WriteRegister(2, -1);
+                break;
+            }
+
+            char filename[FILE_NAME_MAX_LEN + 1];
+            if (!ReadStringFromUser(filenameAddr, filename, sizeof filename)) {
+                DEBUG('e', "Error: filename string too long (maximum is %u bytes).\n",
+                      FILE_NAME_MAX_LEN);
+                machine->WriteRegister(2, -1);
+                break;
+            }
+
+            DEBUG('e', "`Exec` requested for file `%s`.\n", filename);
+            
+
+            OpenFile *executable = fileSystem->Open(filename);
+            if (executable == nullptr) {
+                DEBUG('e',"Unable to open file %s\n", filename);
+                break;
+            }
+
+            Thread * thread = new Thread(filename,true);
+
+
+            AddressSpace *space = new AddressSpace(executable);
+            delete executable;
+
+            thread->space = space;
+
+            currentThread->space = space;
+
+            //thread->Fork(SimpleThread, (void *) names[i]);
+
+            space->InitRegisters();  // Set the initial register values.
+            space->RestoreState();   // Load page table register.
+
+            machine->Run();  // Jump to the user progam.
+            ASSERT(false);   // `machine->Run` never returns; the address space
+                             // exits by doing the system call `Exit`.
+
+            machine->WriteRegister(2, size);
+
+            break;
+        }
+
+        case SC_JOIN:{
+
+
+            break;
+        }
+
+        case SC_EXIT:{
+
+
+            break;
+        }
+
         default:
             fprintf(stderr, "Unexpected system call: id %d.\n", scid);
             ASSERT(false);
@@ -269,6 +331,16 @@ SyscallHandler(ExceptionType _et)
     }
 
     IncrementPC();
+}
+
+
+
+void newThread(){
+
+    space->InitRegisters();  // Set the initial register values.
+    space->RestoreState();   // Load page table register.
+
+    machine->Run();  // Jump to the user progam.
 }
 
 
