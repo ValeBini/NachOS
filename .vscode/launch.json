@@ -8,8 +8,9 @@
             "name": "cpp - Build and debug active file",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${fileDirname}/${fileBasenameNoExtension}",
-            "args": [],
+            // "program": "${workspaceFolder}/code/threads/nachos",
+            "program": "${workspaceFolder}/code/userprog/nachos",
+            "args": ["-x","${workspaceFolder}/code/userland/filetest"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
@@ -22,7 +23,7 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "cpp build active file",
+            "preLaunchTask": "make",
             "miDebuggerPath": "/usr/bin/gdb"
         }
     ]
