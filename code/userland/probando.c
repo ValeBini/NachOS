@@ -10,6 +10,7 @@ int main(){
 	Write(name, n, CONSOLE_OUTPUT);
 	Write("\n", 1, CONSOLE_OUTPUT);
 	// Close(id);
-	Halt();
+	
+	return 0;
 
 }

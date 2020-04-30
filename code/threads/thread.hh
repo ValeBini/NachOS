@@ -122,7 +122,7 @@ public:
     void Sleep();
 
     /// The thread is done executing.
-    void Finish();
+    void Finish(int exitStatus = 0);
 
     int Join();
 

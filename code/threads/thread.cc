@@ -89,15 +89,18 @@ Thread::~Thread()
 {
     DEBUG('t', "Deleting thread \"%s\"\n", name);
 
+#ifdef USER_PROGRAM
+    activeThreads->Remove(threadId);
+    delete openFiles;
+    if(space) delete space;
+#endif
+
     ASSERT(this != currentThread);
     if (stack != nullptr)
         SystemDep::DeallocBoundedArray((char *) stack,
                                        STACK_SIZE * sizeof *stack);
     delete ch;
 
-#ifdef USER_PROGRAM
-    delete openFiles;
-#endif
 }
 
 /// Invoke `(*func)(arg)`, allowing caller and callee to execute
@@ -187,14 +190,14 @@ Thread::Print() const
 /// NOTE: we disable interrupts, so that we do not get a time slice between
 /// setting `threadToBeDestroyed`, and going to sleep.
 void
-Thread::Finish()
+Thread::Finish(int exitStatus)
 {
     interrupt->SetLevel(INT_OFF);
     ASSERT(this == currentThread);
 
     DEBUG('t', "Finishing thread \"%s\"\n", GetName());
 
-    if(ch)ch->Send(1);
+    if(ch)ch->Send(exitStatus);
 
     threadToBeDestroyed = currentThread;
 

@@ -69,7 +69,7 @@ AddressSpace::AddressSpace(OpenFile *executable_file)
 
     if (codeSize > 0) {
         uint32_t virtualAddr = exe.GetCodeAddr();
-        DEBUG('a', "Initializing code segment, at 0x%X, size %u\n",
+        DEBUG('z', "Initializing code segment, at 0x%X, size %u\n",
               virtualAddr, codeSize);
         uint32_t virtualPage    = virtualAddr/PAGE_SIZE;
         uint32_t offset        = virtualAddr%PAGE_SIZE;
@@ -87,22 +87,23 @@ AddressSpace::AddressSpace(OpenFile *executable_file)
     }
     if (initDataSize > 0) {
         uint32_t virtualAddr = exe.GetInitDataAddr();
-        DEBUG('a', "Initializing data segment, at 0x%X, size %u\n",
+        DEBUG('z', "Initializing data segment, at 0x%X, size %u\n",
               virtualAddr, initDataSize);
 
         uint32_t virtualPage    = virtualAddr/PAGE_SIZE;
         uint32_t offset        = virtualAddr%PAGE_SIZE;
-        uint32_t sizeToRead = min(PAGE_SIZE-offset, initDataSize);
+        uint32_t currentIDataSize = initDataSize;
+        uint32_t sizeToRead = min(PAGE_SIZE-offset, currentIDataSize);
 
-        exe.ReadDataBlock(&mainMemory[pageTable[virtualPage].physicalPage*PAGE_SIZE], sizeToRead, offset);
+        exe.ReadDataBlock(&mainMemory[(pageTable[virtualPage].physicalPage*PAGE_SIZE)+offset], sizeToRead, 0);
+        currentIDataSize -= sizeToRead;
         virtualPage++;
-        for(;initDataSize > 0; virtualPage++){
-          sizeToRead = min(PAGE_SIZE, initDataSize);
-          initDataSize -= sizeToRead;
-          exe.ReadDataBlock(&mainMemory[pageTable[virtualPage].physicalPage*PAGE_SIZE], sizeToRead, 0);
+        for(;currentIDataSize > 0; virtualPage++){
+          sizeToRead = min(PAGE_SIZE,currentIDataSize);
+          exe.ReadDataBlock(&mainMemory[pageTable[virtualPage].physicalPage*PAGE_SIZE], sizeToRead, initDataSize-currentIDataSize);
+          currentIDataSize -= sizeToRead;
         }
     }
-
 }
 
 
@@ -111,6 +112,11 @@ AddressSpace::AddressSpace(OpenFile *executable_file)
 /// Nothing for now!
 AddressSpace::~AddressSpace()
 {
+    for (unsigned i = 0; i < numPages; i++) {
+
+        pageMap->Clear(pageTable[i].physicalPage);
+        
+    }
     delete [] pageTable;
 }
 

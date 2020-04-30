@@ -1,6 +1,7 @@
 #include "syscall.h"
 
 
+
 int
 main(void)
 {
@@ -16,17 +17,15 @@ main(void)
         i = 0;
         do
             Read(&buffer[i], 1, input);
-        while (buffer[i++] != '\n');
+        while (buffer[i++] != '\n' );
 
         buffer[--i] = '\0';
-
-        // if (i > 0) {
-        //     newProc = Exec(buffer);
-        //     Halt();
-        //     //Join(newProc);
-        // }
+        
+        if (i > 0) {
+            newProc = Exec(buffer, 0, 1);
+            Join(newProc);
+        }
     }
 
-    Halt();
-    //return -1;
+    return -1;
 }

@@ -26,6 +26,7 @@
 #include "syscall.h"
 #include "filesys/directory_entry.hh"
 #include "threads/system.hh"
+#include "userprog/args.hh"
 
 #include <stdio.h>
 
@@ -72,6 +73,23 @@ void newThread(void *name){
     machine->Run();  // Jump to the user progam.
 }
 
+void newThreadWArgs(void *name){
+
+    currentThread->space->InitRegisters();  // Set the initial register values.
+    currentThread->space->RestoreState();   // Load page table register.
+
+    char ** args = (char**) name;
+    unsigned n = WriteArgs(args);
+   
+    int argsAddr = machine->ReadRegister(STACK_REG) + 16;
+
+   
+    machine->WriteRegister(4, n);
+    machine->WriteRegister(5, argsAddr);
+
+    machine->Run();  // Jump to the user progam.
+}
+
 /// Handle a system call exception.
 ///
 /// * `et` is the kind of exception.  The list of possible exceptions is in
@@ -92,6 +110,8 @@ static void
 SyscallHandler(ExceptionType _et)
 {
     int scid = machine->ReadRegister(2);
+    DEBUG('e', "SCID %d.\n",scid);
+
 
     switch (scid) {
 
@@ -243,7 +263,7 @@ SyscallHandler(ExceptionType _et)
                     if(buffer[i] == '\n') 
                         break;
                 }
-                buffer[i] = 0;
+                buffer[i+1] = 0;
                 machine->WriteRegister(2, i);
             }
             else {
@@ -274,6 +294,8 @@ SyscallHandler(ExceptionType _et)
         case SC_EXEC:{
 
             int filenameAddr = machine->ReadRegister(4);
+            int argsAddr = machine->ReadRegister(5);
+            int enableJoin = machine->ReadRegister(6);
 
             if (filenameAddr == 0){
                 DEBUG('e', "Error: address to filename string is null.\n");
@@ -299,15 +321,18 @@ SyscallHandler(ExceptionType _et)
                 break;
             }
 
-            Thread * thread = new Thread(filename,true);
+            Thread * thread = new Thread(filename,enableJoin);
 
             AddressSpace *space = new AddressSpace(executable);
             
             thread->space = space;
 
             SpaceId spaceId = thread->threadId;
+            if(argsAddr == 0){
+                thread->Fork(newThread,nullptr);
+            }else{
 
-            thread->Fork(newThread,nullptr);
+            }
 
             delete executable;
 
@@ -327,8 +352,11 @@ SyscallHandler(ExceptionType _et)
         }
 
         case SC_EXIT:{
+            int status = machine->ReadRegister(4);
 
+            DEBUG('e', "Exit requested with status %d\n.", status);
 
+            currentThread->Finish(status);
             break;
         }
 

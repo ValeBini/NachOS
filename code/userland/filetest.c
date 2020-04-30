@@ -14,7 +14,7 @@
 #include <stdio.h>
 int
 main(void)
-{
+{ 
     char buffer[12];
     Create("test.txt");
     OpenFileId o = Open("test.txt");
@@ -30,6 +30,6 @@ main(void)
     o = Open("test1.txt");
     Write(buffer,12,o);
     Close(o);
-    Halt();
+    // Halt();
     return 0;
 }
