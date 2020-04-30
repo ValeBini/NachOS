@@ -54,6 +54,7 @@ AddressSpace::AddressSpace(OpenFile *executable_file)
           // set its pages to be read-only.
     }
 
+
     char *mainMemory = machine->GetMMU()->mainMemory;
 
     // Zero out the entire address space, to zero the unitialized data
@@ -65,21 +66,23 @@ AddressSpace::AddressSpace(OpenFile *executable_file)
     // Then, copy in the code and data segments into memory.
     uint32_t codeSize = exe.GetCodeSize();
     uint32_t initDataSize = exe.GetInitDataSize();
+
     if (codeSize > 0) {
         uint32_t virtualAddr = exe.GetCodeAddr();
         DEBUG('a', "Initializing code segment, at 0x%X, size %u\n",
               virtualAddr, codeSize);
         uint32_t virtualPage    = virtualAddr/PAGE_SIZE;
         uint32_t offset        = virtualAddr%PAGE_SIZE;
-        uint32_t physicalPage  = pageTable[virtualPage].physicalPage;
-        uint32_t sizeToRead;
-        
-        sizeToRead = min(PAGE_SIZE-offset,codeSize);
-        exe.ReadCodeBlock(&mainMemory[physicalPage*PAGE_SIZE], sizeToRead, offset);
+        uint32_t currentCodeSize = codeSize;
+        uint32_t sizeToRead = min(PAGE_SIZE-offset,currentCodeSize);
+
+        exe.ReadCodeBlock(&mainMemory[(pageTable[virtualPage].physicalPage*PAGE_SIZE)+offset], sizeToRead, 0);
+        currentCodeSize -= sizeToRead;
         virtualPage++;
-        for(;codeSize >= 0; codeSize -= PAGE_SIZE, virtualPage++){
-          sizeToRead = min(cdPAGE_SIZE,codeSize);
-          exe.ReadCodeBlock(&mainMemory[pageTable[virtualPage].physicalPage*PAGE_SIZE], sizeToRead, 0);
+        for(;currentCodeSize > 0; virtualPage++){
+          sizeToRead = min(PAGE_SIZE,currentCodeSize);
+          exe.ReadCodeBlock(&mainMemory[pageTable[virtualPage].physicalPage*PAGE_SIZE], sizeToRead, codeSize-currentCodeSize);
+          currentCodeSize -= sizeToRead;
         }
     }
     if (initDataSize > 0) {
@@ -89,16 +92,13 @@ AddressSpace::AddressSpace(OpenFile *executable_file)
 
         uint32_t virtualPage    = virtualAddr/PAGE_SIZE;
         uint32_t offset        = virtualAddr%PAGE_SIZE;
-        uint32_t physicalPage  = pageTable[virtualPage].physicalPage;
-        uint32_t sizeToRead;
-        
-        sizeToRead = min(PAGE_SIZE-offset, initDataSize);
-        exe.ReadDataBlock(&mainMemory[physicalPage*PAGE_SIZE], sizeToRead, offset);
+        uint32_t sizeToRead = min(PAGE_SIZE-offset, initDataSize);
+
+        exe.ReadDataBlock(&mainMemory[pageTable[virtualPage].physicalPage*PAGE_SIZE], sizeToRead, offset);
         virtualPage++;
-        for(;codeSize >= 0; initDataSize -= PAGE_SIZE, virtualPage++){
+        for(;initDataSize > 0; virtualPage++){
           sizeToRead = min(PAGE_SIZE, initDataSize);
-          sizeToRead = min(PAGE_SIZE, initDataSize);
-          sizeToRead = min(PAGE_SIZE, initDataSize);
+          initDataSize -= sizeToRead;
           exe.ReadDataBlock(&mainMemory[pageTable[virtualPage].physicalPage*PAGE_SIZE], sizeToRead, 0);
         }
     }
