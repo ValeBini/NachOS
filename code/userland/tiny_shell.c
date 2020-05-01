@@ -1,5 +1,7 @@
 #include "syscall.h"
 
+#include <malloc.h>
+#include <string.h>
 
 
 int
@@ -21,8 +23,13 @@ main(void)
 
         buffer[--i] = '\0';
         
+        char *argv [2];
+        argv[0] = malloc(sizeof(char)*10);
+        argv[1] = malloc(sizeof(char)*10);
+        strcpy(argv[0],"hola");
+        strcpy(argv[1],"chau");
         if (i > 0) {
-            newProc = Exec(buffer, 0, 1);
+            newProc = Exec(buffer, argv, 1);
             Join(newProc);
         }
     }

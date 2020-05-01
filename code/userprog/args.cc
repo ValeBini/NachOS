@@ -71,7 +71,7 @@ WriteArgs(char **args)
 {
     ASSERT(args != nullptr);
 
-    DEBUG('e', "Writing command line arguments into child process.\n");
+    DEBUG('e', "Start writing command line arguments into child process.\n");
 
     // Start writing the strings where the current SP points.  Write them in
     // reverse order (i.e. the string from the first argument will be in a
@@ -98,5 +98,8 @@ WriteArgs(char **args)
     machine->WriteMem(sp + 4 * c, 4, 0);  // The last is null.
 
     machine->WriteRegister(STACK_REG, sp);
+
+    DEBUG('e', "Finish writing command line arguments into child process.\n");
+
     return c;
 }

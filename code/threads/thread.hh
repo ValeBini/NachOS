@@ -158,7 +158,7 @@ private:
     /// Ready, running or blocked.
     ThreadStatus status;
 
-    const char *name;
+    char *name;
 
     Channel *ch;
 

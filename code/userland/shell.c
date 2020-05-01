@@ -1,5 +1,6 @@
 #include "syscall.h"
-
+#include <stdlib.h>
+#include <stdio.h>
 
 #define MAX_LINE_SIZE  60
 #define MAX_ARG_COUNT  32
@@ -116,8 +117,13 @@ main(void)
 
         // Comment and uncomment according to whether command line arguments
         // are given in the system call or not.
-        const SpaceId newProc = Exec(line);
-        //const SpaceId newProc = Exec(line, argv);
+        // const SpaceId newProc = Exec(line);
+
+        const SpaceId newProc = Exec(line, argv, 1);
+        char buffer[10];
+        itoa(newProc,buffer,10);
+        Write(buffer,10,CONSOLE_OUTPUT);
+
 
         // TODO: check for errors when calling `Exec`; this depends on how
         //       errors are reported.

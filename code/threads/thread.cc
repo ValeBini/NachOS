@@ -23,6 +23,7 @@
 #include "system.hh"
 
 #include <stdio.h>
+#include <string.h>
 
 
 /// This is put at the top of the execution stack, for detecting stack
@@ -52,7 +53,8 @@ Thread::Thread(const char *threadName, bool c )
 
     priority = 0;
     originalPriority = 0;
-    name     = threadName;
+    name = new char[50];
+    strcpy(name ,threadName);
     stackTop = nullptr;
     stack    = nullptr;
     status   = JUST_CREATED;

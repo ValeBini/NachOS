@@ -79,13 +79,29 @@ void newThreadWArgs(void *name){
     currentThread->space->RestoreState();   // Load page table register.
 
     char ** args = (char**) name;
-    unsigned n = WriteArgs(args);
-   
-    int argsAddr = machine->ReadRegister(STACK_REG) + 16;
+    // for(int i = 0; i<2 ; i++)
+    //     fprintf(stderr, "Arg: %d, arg %s.\n",i,args[i]);
+    int n = WriteArgs(args);
+    int argsAddr = (machine->ReadRegister(STACK_REG));
+    fprintf(stderr, "Posicion memoria: %d.\n",argsAddr);
 
    
     machine->WriteRegister(4, n);
+
+    // char buffer[500];
+    // int vaddr;
+    // machine -> ReadMem(argsAddr, 4, &vaddr);
+    // ReadStringFromUser(vaddr, buffer, 500);
+    // DEBUG('e', "First argument: %s, vaddr: %d\n", buffer, vaddr);
+
+    // char buffer2[500];
+    // machine -> ReadMem(argsAddr+4, 4, &vaddr);
+    // ReadStringFromUser(vaddr, buffer2, 500);
+    // DEBUG('e', "Second argument: %s, vaddr: %d\n", buffer2, vaddr);
+
     machine->WriteRegister(5, argsAddr);
+
+    DEBUG('e', "Prepared to run process with %d args starting at %p .\n",n,argsAddr);
 
     machine->Run();  // Jump to the user progam.
 }
@@ -331,7 +347,7 @@ SyscallHandler(ExceptionType _et)
             if(argsAddr == 0){
                 thread->Fork(newThread,nullptr);
             }else{
-
+                thread->Fork(newThreadWArgs,SaveArgs(argsAddr));
             }
 
             delete executable;
@@ -344,7 +360,11 @@ SyscallHandler(ExceptionType _et)
         case SC_JOIN:{
             SpaceId id = machine->ReadRegister(4);
 
+            DEBUG('e', "Join requested for process %d.\n", id);
+
             int n = activeThreads->Get(id)->Join();
+
+            DEBUG('e', "Proces %d finished, join finished.\n", id);
 
             machine->WriteRegister(2, n);
 
