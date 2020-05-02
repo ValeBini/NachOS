@@ -79,29 +79,24 @@ void newThreadWArgs(void *name){
     currentThread->space->RestoreState();   // Load page table register.
 
     char ** args = (char**) name;
-    // for(int i = 0; i<2 ; i++)
-    //     fprintf(stderr, "Arg: %d, arg %s.\n",i,args[i]);
     int n = WriteArgs(args);
-    int argsAddr = (machine->ReadRegister(STACK_REG));
-    fprintf(stderr, "Posicion memoria: %d.\n",argsAddr);
-
+    int argsAddr = (machine->ReadRegister(STACK_REG)+16);
    
     machine->WriteRegister(4, n);
-
-    // char buffer[500];
-    // int vaddr;
-    // machine -> ReadMem(argsAddr, 4, &vaddr);
-    // ReadStringFromUser(vaddr, buffer, 500);
-    // DEBUG('e', "First argument: %s, vaddr: %d\n", buffer, vaddr);
-
-    // char buffer2[500];
-    // machine -> ReadMem(argsAddr+4, 4, &vaddr);
-    // ReadStringFromUser(vaddr, buffer2, 500);
-    // DEBUG('e', "Second argument: %s, vaddr: %d\n", buffer2, vaddr);
-
     machine->WriteRegister(5, argsAddr);
 
     DEBUG('e', "Prepared to run process with %d args starting at %p .\n",n,argsAddr);
+
+    char buffer[500];
+    int vaddr;
+    DEBUG('e', "----------------------\n");
+    DEBUG('e', "Amount of arguments: %d\n", n);
+    for( int i = 0 ; i < n ; i++ ){
+        machine -> ReadMem(argsAddr + (4*i), 4, &vaddr);
+        ReadStringFromUser(vaddr, buffer, 500);
+        DEBUG('e', "%d - nth argument: %s, vaddr: %d \n",i, buffer, vaddr);
+    }
+    DEBUG('e', "----------------------\n");
 
     machine->Run();  // Jump to the user progam.
 }

@@ -142,3 +142,52 @@ Machine::SetHandler(ExceptionType et, ExceptionHandler handler)
 
     handlers[et] = handler;
 }
+
+
+#define StackReg	29	// User's stack pointer
+#define RetAddrReg	31	// Holds return address for procedure calls
+#define NumGPRegs	32	// 32 general purpose registers on MIPS
+#define HiReg		32	// Double register to hold multiply result
+#define LoReg		33
+#define PCReg		34	// Current program counter
+#define NextPCReg	35	// Next program counter (for branch delay) 
+#define PrevPCReg	36	// Previous program counter (for debugging)
+#define LoadReg		37	// The register target of a delayed load.
+#define LoadValueReg 	38	// The value to be loaded by a delayed load.
+#define BadVAddrReg	39	// The failing virtual address on an exception
+
+#define NumTotalRegs 	40
+
+void
+Machine::DumpState()
+{
+    int i;
+    
+    DEBUG('Y',"Machine registers:\n");
+    for (i = 0; i < NumGPRegs; i++)
+	switch (i) {
+	  case StackReg:
+	    DEBUG('Y',"\tSP(%d):\t0x%x%s", i, registers[i],
+		   ((i % 4) == 3) ? "\n" : "");
+	    break;
+	    
+	  case RetAddrReg:
+	    DEBUG('Y',"\tRA(%d):\t0x%x%s", i, registers[i],
+		   ((i % 4) == 3) ? "\n" : "");
+	    break;
+	  
+	  default:
+	    DEBUG('Y',"\t%d:\t0x%x%s", i, registers[i],
+		   ((i % 4) == 3) ? "\n" : "");
+	    break;
+	}
+    
+    DEBUG('Y',"\tHi:\t0x%x", registers[HiReg]);
+    DEBUG('Y',"\tLo:\t0x%x\n", registers[LoReg]);
+    DEBUG('Y',"\tPC:\t0x%x", registers[PCReg]);
+    DEBUG('Y',"\tNextPC:\t0x%x", registers[NextPCReg]);
+    DEBUG('Y',"\tPrevPC:\t0x%x\n", registers[PrevPCReg]);
+    DEBUG('Y',"\tLoad:\t0x%x", registers[LoadReg]);
+    DEBUG('Y',"\tLoadV:\t0x%x\n", registers[LoadValueReg]);
+    DEBUG('Y',"\n");
+}

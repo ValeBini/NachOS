@@ -71,35 +71,36 @@ WriteArgs(char **args)
 {
     ASSERT(args != nullptr);
 
-    DEBUG('e', "Start writing command line arguments into child process.\n");
+     DEBUG('e', "Start writing command line arguments into child process.\n");
 
-    // Start writing the strings where the current SP points.  Write them in
-    // reverse order (i.e. the string from the first argument will be in a
-    // higher memory address than the string from the second argument).
-    int argsAddress[MAX_ARG_COUNT];
-    unsigned c;
-    int sp = machine->ReadRegister(STACK_REG);
-    for (c = 0; c < MAX_ARG_COUNT; c++) {
-        if (args[c] == nullptr)     // If the last was reached, terminate.
-            break;
-        sp -= strlen(args[c]) + 1;  // Decrease SP (leave one byte for \0).
-        WriteStringToUser(args[c], sp);  // Write the string there.
-        argsAddress[c] = sp;        // Save the argument's address.
-        delete args[c];             // Free the string.
-    }
-    delete args;  // Free the array.
-    ASSERT(c < MAX_ARG_COUNT);
+     // Start writing the strings where the current SP points.  Write them in
+     // reverse order (i.e. the string from the first argument will be in a
+     // higher memory address than the string from the second argument).
+     int argsAddress[MAX_ARG_COUNT];
+     unsigned c;
+     int sp = machine->ReadRegister(STACK_REG);
+     for (c = 0; c < MAX_ARG_COUNT; c++) {
+         if (args[c] == nullptr)     // If the last was reached, terminate.
+             break;
+         sp -= strlen(args[c]) + 1;  // Decrease SP (leave one byte for \0).
+         WriteStringToUser(args[c], sp);  // Write the string there.
+         argsAddress[c] = sp;        // Save the argument's address.
+         delete args[c];             // Free the string.
+     }
+     delete args;  // Free the array.
+     ASSERT(c < MAX_ARG_COUNT);
 
-    sp -= sp % 4;     // Align the stack to a multiple of four.
-    sp -= c * 4 + 4;  // Make room for `argv`, including the trailing null.
-    // Write each argument's address.
-    for (unsigned i = 0; i < c; i++)
-        machine->WriteMem(sp + 4 * i, 4, argsAddress[i]);
-    machine->WriteMem(sp + 4 * c, 4, 0);  // The last is null.
+     sp -= sp % 4;     // Align the stack to a multiple of four.
+     sp -= c * 4 + 4;  // Make room for `argv`, including the trailing null.
+     // Write each argument's address.
+     for (unsigned i = 0; i < c; i++)
+         machine->WriteMem(sp + 4 * i, 4, argsAddress[i]);
+     machine->WriteMem(sp + 4 * c, 4, 0);  // The last is null.
+     sp -= 16;  // Make room for the register saves.
 
-    machine->WriteRegister(STACK_REG, sp);
+     machine->WriteRegister(STACK_REG, sp);
 
-    DEBUG('e', "Finish writing command line arguments into child process.\n");
+     DEBUG('e', "Finish writing command line arguments into child process.\n");
 
-    return c;
-}
+     return c;
+ }
