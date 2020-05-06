@@ -385,16 +385,45 @@ SyscallHandler(ExceptionType _et)
     IncrementPC();
 }
 
+int getVPN(int vaddr){
+    return vaddr/PAGE_SIZE;
+}
+
+static void
+PageFaultHandler(ExceptionType et){
+    static int i = 0;
+    int vaddr = machine->ReadRegister(BAD_VADDR_REG);
+    int vpn = getVPN(vaddr);
+    machine->GetMMU()->tlb[(i++)%TLB_SIZE] = currentThread->space->pageTable[vpn];
+}
+
+static void
+ReadOnlyHandler(ExceptionType et){
+    
+    // finish the process with the exception as exit value to inform 
+    // the father how has the process finished
+    currentThread->Finish(et);
+}
 
 /// By default, only system calls have their own handler.  All other
 /// exception types are assigned the default handler.
 void
 SetExceptionHandlers()
 {
-    machine->SetHandler(NO_EXCEPTION,            &DefaultHandler);
-    machine->SetHandler(SYSCALL_EXCEPTION,       &SyscallHandler);
+    #ifdef VMEM
+
+    machine->SetHandler(PAGE_FAULT_EXCEPTION,    &PageFaultHandler);
+    machine->SetHandler(READ_ONLY_EXCEPTION,     &ReadOnlyHandler);
+
+    #else
+
     machine->SetHandler(PAGE_FAULT_EXCEPTION,    &DefaultHandler);
     machine->SetHandler(READ_ONLY_EXCEPTION,     &DefaultHandler);
+
+    #endif
+
+    machine->SetHandler(NO_EXCEPTION,            &DefaultHandler);
+    machine->SetHandler(SYSCALL_EXCEPTION,       &SyscallHandler);
     machine->SetHandler(BUS_ERROR_EXCEPTION,     &DefaultHandler);
     machine->SetHandler(ADDRESS_ERROR_EXCEPTION, &DefaultHandler);
     machine->SetHandler(OVERFLOW_EXCEPTION,      &DefaultHandler);

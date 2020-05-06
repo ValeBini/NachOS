@@ -162,6 +162,12 @@ AddressSpace::SaveState()
 void
 AddressSpace::RestoreState()
 {
+    #ifdef VMEM
+    for(int i = 0 ; i < TLB_SIZE; i++){
+      machine->GetMMU()->tlb[i].valid = false;
+    }    
+    #else 
     machine->GetMMU()->pageTable     = pageTable;
     machine->GetMMU()->pageTableSize = numPages;
+    #endif
 }

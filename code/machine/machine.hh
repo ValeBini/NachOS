@@ -20,6 +20,7 @@
 #ifndef NACHOS_MACHINE_MACHINE__HH
 #define NACHOS_MACHINE_MACHINE__HH
 
+#define MAX_PAGE_FAULTS 4
 
 #include "exception_type.hh"
 #include "mmu.hh"
