@@ -27,9 +27,7 @@ bool CountArgsToSave(int address, unsigned *count)
     unsigned c = 0;
     do {
         int i;
-        for(i = 0; i<MAX_PAGE_FAULTS; i++)
-            if(machine->ReadMem(address + 4 * c, 4, &val)) 
-                break;
+        for(i = 0; (i<MAX_PAGE_FAULTS) && (!(machine->ReadMem(address + 4 * c, 4, &val))); i++);
         ASSERT(i<MAX_PAGE_FAULTS);
         c++;
     } while (c < MAX_ARG_COUNT && val != 0);
@@ -63,9 +61,7 @@ SaveArgs(int address)
         int strAddr;
         // For each pointer, read the corresponding string.
         int j;
-        for(j = 0; j<MAX_PAGE_FAULTS; j++)
-            if(machine->ReadMem(address + i * 4, 4, &strAddr)) 
-                break;
+        for(j = 0; (j<MAX_PAGE_FAULTS) && (!(machine->ReadMem(address + i * 4, 4, &strAddr))); j++);
         ASSERT(j<MAX_PAGE_FAULTS);
 
         ReadStringFromUser(strAddr, args[i], MAX_ARG_LENGTH);
@@ -104,12 +100,12 @@ WriteArgs(char **args)
      // Write each argument's address.
      for (unsigned i = 0; i < c; i++){
         int j;
-        for(j = 0; j<MAX_PAGE_FAULTS && !(machine->WriteMem(sp + 4 * i, 4, argsAddress[i])); j++);
+        for(j = 0; (j<MAX_PAGE_FAULTS) && (!(machine->WriteMem(sp + 4 * i, 4, argsAddress[i]))); j++);
         ASSERT(j<MAX_PAGE_FAULTS);
      }
 
     int i;
-    for(i = 0; i<MAX_PAGE_FAULTS && !(machine->WriteMem(sp + 4 * c, 4, 0)); i++);
+    for(i = 0; (i<MAX_PAGE_FAULTS) && (!(machine->WriteMem(sp + 4 * c, 4, 0))); i++);
     ASSERT(i<MAX_PAGE_FAULTS);  // The last is null.
      sp -= 16;  // Make room for the register saves.
 

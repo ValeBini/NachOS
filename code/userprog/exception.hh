@@ -12,9 +12,9 @@
 /// are called when a user program is executing, and either does a system
 /// call, or generates an addressing or arithmetic exception.
 void SetExceptionHandlers();
-#ifdef VMEM
-void PageFaultHandler(ExceptionType et);
-void ReadOnlyHandler(ExceptionType et);
-#endif
+// #ifdef VMEM
+// void PageFaultHandler(ExceptionType et);
+// void ReadOnlyHandler(ExceptionType et);
+// #endif
 
 #endif

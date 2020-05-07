@@ -20,7 +20,8 @@ void ReadBufferFromUser(int userAddress, char *outBuffer,
         int temp;
         count++;
         int i;
-        for(i = 0; i<MAX_PAGE_FAULTS && !(machine->ReadMem(userAddress++, 1, &temp)); i++);
+        for(i = 0; (i<MAX_PAGE_FAULTS) && (!(machine->ReadMem(userAddress, 1, &temp))); i++);
+        userAddress++;
         ASSERT(i<MAX_PAGE_FAULTS);
         *outBuffer++ = (unsigned char) temp;
     } while (count < byteCount);
@@ -42,7 +43,8 @@ bool ReadStringFromUser(int userAddress, char *outString,
         int temp;
         count++;
         int i;
-        for(i = 0; i<MAX_PAGE_FAULTS && !(machine->ReadMem(userAddress++, 1, &temp)); i++);
+        for(i = 0; (i<MAX_PAGE_FAULTS) && (!(machine->ReadMem(userAddress, 1, &temp))); i++);
+        userAddress++;
         ASSERT(i<MAX_PAGE_FAULTS);
         *outString = (unsigned char) temp;
     } while (*outString++ != '\0' && count < maxByteCount);
@@ -60,7 +62,8 @@ void WriteBufferToUser(const char *buffer, int userAddress,
     unsigned count = 0;
     do {
         int i;
-        for(i = 0; i<MAX_PAGE_FAULTS && !(machine->WriteMem(userAddress++, 1, buffer[count])); i++);
+        for(i = 0; (i<MAX_PAGE_FAULTS) && (!(machine->WriteMem(userAddress, 1, buffer[count]))); i++);
+        userAddress++;
         ASSERT(i<MAX_PAGE_FAULTS);
         count++;
         // *outBuffer = (unsigned char) temp;
@@ -76,7 +79,8 @@ void WriteStringToUser(const char *string, int userAddress)
     unsigned count = 0;
     do {
         int i;
-        for(i = 0; i<MAX_PAGE_FAULTS && !(machine->WriteMem(userAddress++, 1, string[count])); i++);
+        for(i = 0; (i<MAX_PAGE_FAULTS) && (!(machine->WriteMem(userAddress, 1, string[count]))); i++);
+        userAddress++;
         ASSERT(i<MAX_PAGE_FAULTS);
         count++;
     } while ((string[count]) != '\0' );

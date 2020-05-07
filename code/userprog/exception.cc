@@ -394,7 +394,11 @@ PageFaultHandler(ExceptionType et){
     static int i = 0;
     int vaddr = machine->ReadRegister(BAD_VADDR_REG);
     int vpn = getVPN(vaddr);
-    machine->GetMMU()->tlb[(i++)%TLB_SIZE] = currentThread->space->pageTable[vpn];
+    machine->GetMMU()->tlb[i] = currentThread->space->pageTable[vpn];
+
+    //machine->GetMMU()->tlb[i].valid = true;
+    //machine->GetMMU()->tlb[i].physicalPage = currentThread->space->pageTable[vpn].physicalPage;
+    i = (i+1)%TLB_SIZE;
 }
 
 static void
@@ -410,22 +414,21 @@ ReadOnlyHandler(ExceptionType et){
 void
 SetExceptionHandlers()
 {
-    #ifdef VMEM
-
-    machine->SetHandler(PAGE_FAULT_EXCEPTION,    &PageFaultHandler);
-    machine->SetHandler(READ_ONLY_EXCEPTION,     &ReadOnlyHandler);
-
-    #else
 
     machine->SetHandler(PAGE_FAULT_EXCEPTION,    &DefaultHandler);
     machine->SetHandler(READ_ONLY_EXCEPTION,     &DefaultHandler);
-
-    #endif
-
     machine->SetHandler(NO_EXCEPTION,            &DefaultHandler);
     machine->SetHandler(SYSCALL_EXCEPTION,       &SyscallHandler);
     machine->SetHandler(BUS_ERROR_EXCEPTION,     &DefaultHandler);
     machine->SetHandler(ADDRESS_ERROR_EXCEPTION, &DefaultHandler);
     machine->SetHandler(OVERFLOW_EXCEPTION,      &DefaultHandler);
     machine->SetHandler(ILLEGAL_INSTR_EXCEPTION, &DefaultHandler);
+
+
+    #ifdef VMEM
+
+    machine->SetHandler(PAGE_FAULT_EXCEPTION,    &PageFaultHandler);
+    machine->SetHandler(READ_ONLY_EXCEPTION,     &ReadOnlyHandler);
+
+    #endif
 }
