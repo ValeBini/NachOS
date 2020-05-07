@@ -1,0 +1,38 @@
+Ejercicio 2:
+
+    Sort:
+        - 4 Entradas de TLB:
+            Un sort:                miss 1286746    hit 20713255    hit ratio: 94.15115% 
+            Muchos sort paralelos:  miss 5902229    hit 69297772    hit ratio: 92.15129%
+
+        - 32 Entradas de TLB = MIPS R2000:
+            Un sort:                miss 3069       hit 21996932    hit ratio: 99.98605%
+            Muchos sort paralelos:  miss 7135092    hit 149864909   hit ratio: 95.45536% 
+
+        - 64 Entradas de TLB = MIPS R4000:
+            Un sort:                miss 85         hit 21999916    hit ratio: 99.99961% 
+            Muchos sort paralelos:  miss 8155372    hit 170844629   hit ratio: 95.44393%
+
+    MatMult 50x50:
+        - 4 Entradas de TLB:
+            Un matmult:             miss 960391     hit 11339610    hit ratio: 92.19194%
+            Dos matmult paralelos:  miss 2325252    hit 22474749    hit ratio: 90.62398%
+
+        - 32 Entradas de TLB = MIPS R2000:
+            Un matmult:             miss 158712     hit 11641289    hit ratio: 98.65498% 
+            Dos matmult paralelos:  miss 1391343    hit 22908658    hit ratio: 94.27431% 
+
+        - 64 Entradas de TLB = MIPS R4000:
+            Un matmult:             miss 13917      hit 11686084    hit ratio: 99.88105% 
+            Dos matmult paralelos:  miss 1559459    hit 22740542    hit ratio: 93.58247%
+
+    Conclusión:
+        Observamos que en general, mientras más grande sea la TLB, mejor es el hit ratio. 
+        Cuando corremos un solo proceso, el hit ratio es mucho mejor que cuando se corren
+        varios procesos en paralelo. Esto se debe a que en cada cambio de contexto, la TLB
+        se resetea, generando hasta N fallos extra por cada cambio (donde N es el tamaño 
+        de la misma).
+        32 y 64 obtienen resultados muy similares. Puede observarse que en algunos casos, 
+        como por ejemplo al correr 2 matmult de 50x50 en paralelo, 64 empeora un poco el 
+        rendimiento con respecto a 32. Esto se debe a que al ser más grande, genera más 
+        fallos en cada cambio de contexto.

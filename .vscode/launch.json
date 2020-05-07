@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             // "program": "${workspaceFolder}/code/threads/nachos",
-            "program": "${workspaceFolder}/code/userprog/nachos",
+            "program": "${workspaceFolder}/code/vmem/nachos",
             "args": ["-x","shell"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/code/userland",
