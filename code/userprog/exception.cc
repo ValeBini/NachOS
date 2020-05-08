@@ -345,8 +345,10 @@ SyscallHandler(ExceptionType _et)
                 thread->Fork(newThreadWArgs,SaveArgs(argsAddr));
             }
 
+        #ifndef VMEM
             delete executable;
-
+        #endif
+            
             machine->WriteRegister(2, spaceId);
 
             break;
@@ -394,7 +396,11 @@ PageFaultHandler(ExceptionType et){
     static int i = 0;
     int vaddr = machine->ReadRegister(BAD_VADDR_REG);
     int vpn = getVPN(vaddr);
-    machine->GetMMU()->tlb[i] = currentThread->space->pageTable[vpn];
+
+    if (currentThread->space->pageTable[vpn].physicalPage == -1)
+        machine->GetMMU()->tlb[i] = currentThread->space->LoadPage(vpn);
+    else
+        machine->GetMMU()->tlb[i] = currentThread->space->pageTable[vpn];
 
     //machine->GetMMU()->tlb[i].valid = true;
     //machine->GetMMU()->tlb[i].physicalPage = currentThread->space->pageTable[vpn].physicalPage;

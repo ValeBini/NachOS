@@ -16,6 +16,7 @@
 
 #include "filesys/file_system.hh"
 #include "machine/translation_entry.hh"
+#include "executable.hh"
 
 
 const unsigned USER_STACK_SIZE = 1024;  ///< Increase this as necessary!
@@ -34,7 +35,7 @@ public:
     /// Parameters:
     /// * `executable_file` is the open file that corresponds to the
     ///   program; it contains the object code to load into memory.
-    AddressSpace(OpenFile *executable_file);
+    AddressSpace(OpenFile *exe_file);
 
     /// De-allocate an address space.
     ~AddressSpace();
@@ -46,10 +47,12 @@ public:
 
     void SaveState();
     void RestoreState();
+    OpenFile *executable_file;
+    TranslationEntry LoadPage(int vpn);
 
     /// Assume linear page table translation for now!
     TranslationEntry *pageTable;
-
+    Executable * exe;
 private:
 
     /// Number of pages in the virtual address space.
