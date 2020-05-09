@@ -402,8 +402,6 @@ PageFaultHandler(ExceptionType et){
     else
         machine->GetMMU()->tlb[i] = currentThread->space->pageTable[vpn];
 
-    //machine->GetMMU()->tlb[i].valid = true;
-    //machine->GetMMU()->tlb[i].physicalPage = currentThread->space->pageTable[vpn].physicalPage;
     i = (i+1)%TLB_SIZE;
 }
 
