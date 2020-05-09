@@ -19,9 +19,6 @@ AddressSpace::AddressSpace(OpenFile *exe_file)
 {
     ASSERT(exe_file != nullptr);
 
-    // executable_file = new OpenFile();
-    // executable_file = exe_file;
-
     exe = new Executable (exe_file);
 
     ASSERT(exe->CheckMagic());
@@ -65,12 +62,6 @@ AddressSpace::AddressSpace(OpenFile *exe_file)
 #ifndef VMEM
 
     char *mainMemory = machine->GetMMU()->mainMemory;
-
-    // Zero out the entire address space, to zero the unitialized data
-    // segment and the stack segment.
-
-    // Then, copy in the code and data segments into memory.
-
     
 
     for (unsigned i = 0; i < numPages; i++) {
@@ -156,10 +147,9 @@ uint32_t LoadStack(uint32_t physicalAddr, char* mainMemory, uint32_t vpn, uint32
   memset(&mainMemory[physicalAddr + alreadyRead],0, PAGE_SIZE - alreadyRead);
   return 0;
 }
-//physicalPag = -1 => loadPage(vpn)
+
 TranslationEntry AddressSpace::LoadPage(int vpn){
 
-  //exe = new Executable (executable_file);
   
   uint32_t codeSize = exe->GetCodeSize();
   uint32_t dataSize = exe->GetInitDataSize();
