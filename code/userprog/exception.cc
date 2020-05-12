@@ -359,6 +359,8 @@ SyscallHandler(ExceptionType _et)
 
             DEBUG('e', "Join requested for process %d.\n", id);
 
+            ASSERT(activeThreads->HasKey(id));
+
             int n = activeThreads->Get(id)->Join();
 
             DEBUG('e', "Proces %d finished, join finished.\n", id);
