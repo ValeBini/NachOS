@@ -30,7 +30,7 @@
 
 #include "mmu.hh"
 #include "endianness.hh"
-
+#include "threads/system.hh"
 
 
 MMU::MMU()
@@ -148,7 +148,6 @@ MMU::WriteMem(unsigned addr, unsigned size, int value)
 ExceptionType
 MMU::RetrievePageEntry(unsigned vpn, TranslationEntry **entry) const
 {
-    static double miss = 0, hit = 0;
     
     ASSERT(entry != nullptr);
 
@@ -171,21 +170,19 @@ MMU::RetrievePageEntry(unsigned vpn, TranslationEntry **entry) const
         return NO_EXCEPTION;
 
     } else {
-        // Use the TLB.
-        if(int(hit)%100000 == 1)
-            DEBUG_CONT('q', "miss %.0lf, hit %.0lf, hit ratio: %.5lf\% \n",miss,(hit-miss), ((hit-miss)/hit)*100);
+
         unsigned i;
         for (i = 0; i < TLB_SIZE; i++)
             if (tlb[i].valid && tlb[i].virtualPage == vpn) {
                 *entry = &tlb[i];  // FOUND!
-                hit++;
+                stats->numPageHits++;
                 return NO_EXCEPTION;
             }
 
         // Not found.
         DEBUG_CONT('a', "no valid TLB entry found for this virtual page!\n");
         
-        miss++;
+        stats->numPageFaults++;
         return PAGE_FAULT_EXCEPTION;  // Really, this is a TLB fault, the
                                       // page may be in memory, but not in
                                       // the TLB.
