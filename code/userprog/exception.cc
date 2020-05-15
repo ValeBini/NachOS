@@ -359,7 +359,11 @@ SyscallHandler(ExceptionType _et)
 
             DEBUG('e', "Join requested for process %d.\n", id);
 
-            ASSERT(activeThreads->HasKey(id));
+            if(!currentThread->openFiles->HasKey(id)){
+                DEBUG('e', "Error: process id doesn't exist.\n");
+                machine->WriteRegister(2, -1);
+                break;
+            }
 
             int n = activeThreads->Get(id)->Join();
 

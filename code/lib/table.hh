@@ -93,9 +93,11 @@ template <class T>
 bool
 Table<T>::HasKey(int i) const
 {
-    ASSERT(i >= 0);
-
-    return i < current && !freed.Has(i);
+    //ASSERT(i >= 0);
+    if (i>=0)
+        return i < current && !freed.Has(i);
+    else 
+        return -1;
 }
 
 template <class T>
