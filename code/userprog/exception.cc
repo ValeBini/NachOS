@@ -393,6 +393,8 @@ SyscallHandler(ExceptionType _et)
     IncrementPC();
 }
 
+#ifdef VMEM
+
 int getVPN(int vaddr){
     return vaddr/PAGE_SIZE;
 }
@@ -403,7 +405,7 @@ PageFaultHandler(ExceptionType et){
     int vaddr = machine->ReadRegister(BAD_VADDR_REG);
     int vpn = getVPN(vaddr);
 
-    if (currentThread->space->pageTable[vpn].physicalPage == -1)
+    if (!currentThread->space->pageTable[vpn].valid)
         machine->GetMMU()->tlb[i] = currentThread->space->LoadPage(vpn);
     else
         machine->GetMMU()->tlb[i] = currentThread->space->pageTable[vpn];
@@ -418,6 +420,8 @@ ReadOnlyHandler(ExceptionType et){
     // the father how has the process finished
     currentThread->Finish(et);
 }
+
+#endif
 
 /// By default, only system calls have their own handler.  All other
 /// exception types are assigned the default handler.

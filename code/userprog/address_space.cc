@@ -9,7 +9,9 @@
 #include "address_space.hh"
 #include "threads/system.hh"
 
+#include <stdio.h>
 #include <string.h>
+#include <string>
 
 
 /// First, set up the translation from program memory to physical memory.
@@ -17,6 +19,9 @@
 /// and we have a single unsegmented page table.
 AddressSpace::AddressSpace(OpenFile *exe_file)
 {
+
+    
+
     ASSERT(exe_file != nullptr);
 
     exe = new Executable (exe_file);
@@ -29,8 +34,24 @@ AddressSpace::AddressSpace(OpenFile *exe_file)
       // We need to increase the size to leave room for the stack.
     numPages = DivRoundUp(size, PAGE_SIZE);
     size = numPages * PAGE_SIZE;
+ 
+#ifdef VMEM
+    char * filename = new char[100];
+    char * id = new char[100];
 
+    //itoa(currentThread->threadId,id,10);
+    strncpy(id, std::to_string(currentThread->threadId).c_str(), 100);
+    strcpy(filename,"SWAP.");
+    strcat(filename,id);
+    fileSystem->Create(filename,size);
+    swap_file = fileSystem->Open(filename);
+
+    
+    ASSERT(numPages <= coreMap->CountClear());
+#else
     ASSERT(numPages <= pageMap->CountClear());
+#endif
+
       // Check we are not trying to run anything too big -- at least until we
       // have virtual memory.
 
@@ -45,13 +66,13 @@ AddressSpace::AddressSpace(OpenFile *exe_file)
           // For now, virtual page number = physical page number.
 #ifdef VMEM
         pageTable[i].physicalPage = -1;
+        pageTable[i].valid        = false;
 #else
         int newPage = pageMap->Find();
-        ASSERT( newPage != -1);
+        ASSERT(newPage != -1);
         pageTable[i].physicalPage = (unsigned int)newPage;
-#endif
-        
         pageTable[i].valid        = true;
+#endif
         pageTable[i].use          = false;
         pageTable[i].dirty        = false;
         pageTable[i].readOnly     = false;
@@ -78,13 +99,13 @@ AddressSpace::AddressSpace(OpenFile *exe_file)
         uint32_t virtualPage    = virtualAddr/PAGE_SIZE;
         uint32_t offset        = virtualAddr%PAGE_SIZE;
         uint32_t currentCodeSize = codeSize;
-        uint32_t sizeToRead = min(PAGE_SIZE-offset,currentCodeSize);
+        uint32_t sizeToRead = minn(PAGE_SIZE-offset,currentCodeSize);
 
         exe->ReadCodeBlock(&mainMemory[(pageTable[virtualPage].physicalPage*PAGE_SIZE)+offset], sizeToRead, 0);
         currentCodeSize -= sizeToRead;
         virtualPage++;
         for(;currentCodeSize > 0; virtualPage++){
-          sizeToRead = min(PAGE_SIZE,currentCodeSize);
+          sizeToRead = minn(PAGE_SIZE,currentCodeSize);
           exe->ReadCodeBlock(&mainMemory[pageTable[virtualPage].physicalPage*PAGE_SIZE], sizeToRead, codeSize-currentCodeSize);
           currentCodeSize -= sizeToRead;
         }
@@ -97,13 +118,13 @@ AddressSpace::AddressSpace(OpenFile *exe_file)
         uint32_t virtualPage    = virtualAddr/PAGE_SIZE;
         uint32_t offset        = virtualAddr%PAGE_SIZE;
         uint32_t currentIDataSize = initDataSize;
-        uint32_t sizeToRead = min(PAGE_SIZE-offset, currentIDataSize);
+        uint32_t sizeToRead = minn(PAGE_SIZE-offset, currentIDataSize);
 
         exe->ReadDataBlock(&mainMemory[(pageTable[virtualPage].physicalPage*PAGE_SIZE)+offset], sizeToRead, 0);
         currentIDataSize -= sizeToRead;
         virtualPage++;
         for(;currentIDataSize > 0; virtualPage++){
-          sizeToRead = min(PAGE_SIZE,currentIDataSize);
+          sizeToRead = minn(PAGE_SIZE,currentIDataSize);
           exe->ReadDataBlock(&mainMemory[pageTable[virtualPage].physicalPage*PAGE_SIZE], sizeToRead, initDataSize-currentIDataSize);
           currentIDataSize -= sizeToRead;
         }
@@ -111,6 +132,8 @@ AddressSpace::AddressSpace(OpenFile *exe_file)
 #endif
     
 }
+
+#ifdef VMEM
 
 uint32_t  LoadCode(uint32_t physicalAddr, Executable *exe, char* mainMemory, uint32_t vpn, uint32_t vaddr, uint32_t init, uint32_t size){
     
@@ -121,7 +144,7 @@ uint32_t  LoadCode(uint32_t physicalAddr, Executable *exe, char* mainMemory, uin
     
     leftToRead = size + init - vaddr;
     
-    int sizeToRead = min((int)PAGE_SIZE, max(0, leftToRead));
+    int sizeToRead = minn((int)PAGE_SIZE, maxx(0, leftToRead));
     if(sizeToRead <= 0) return sizeToRead;
     exe->ReadCodeBlock(&mainMemory[physicalAddr], sizeToRead, vaddr - init);
     return sizeToRead;
@@ -137,7 +160,7 @@ uint32_t  LoadData(uint32_t physicalAddr,Executable *exe, char* mainMemory, uint
     
     leftToRead = size + init - (vaddr + alreadyRead);
 
-    int sizeToRead = min((int)(PAGE_SIZE - alreadyRead), leftToRead);
+    int sizeToRead = minn((int)(PAGE_SIZE - alreadyRead), leftToRead);
     if(sizeToRead <= 0) return alreadyRead;
     exe->ReadDataBlock(&mainMemory[physicalAddr + alreadyRead], sizeToRead, (vaddr + alreadyRead) - init);
     return alreadyRead + sizeToRead;
@@ -147,6 +170,7 @@ uint32_t LoadStack(uint32_t physicalAddr, char* mainMemory, uint32_t vpn, uint32
   memset(&mainMemory[physicalAddr + alreadyRead],0, PAGE_SIZE - alreadyRead);
   return 0;
 }
+
 
 TranslationEntry AddressSpace::LoadPage(int vpn){
 
@@ -158,27 +182,55 @@ TranslationEntry AddressSpace::LoadPage(int vpn){
   uint32_t vaddr = vpn * PAGE_SIZE;
   char *mainMemory = machine->GetMMU()->mainMemory;
 
-  int newPage = pageMap->Find();
-  ASSERT( newPage != -1);
+  int newPage = coreMap->FindAPage(vpn);
+  
   pageTable[vpn].physicalPage = (unsigned int)newPage;  
   uint32_t physicalAddr = pageTable[vpn].physicalPage*PAGE_SIZE;
-  int alreadyRead = LoadCode(physicalAddr, exe, mainMemory, vpn, vaddr, initAddrCode, codeSize);
-  alreadyRead = LoadData(physicalAddr, exe, mainMemory, vpn, vaddr, initAddrData, dataSize, alreadyRead);
-  LoadStack(physicalAddr, mainMemory, vpn, alreadyRead);
+    
+  if(pageTable[vpn].physicalPage == -1){
+    // Binary
+    int alreadyRead = LoadCode(physicalAddr, exe, mainMemory, vpn, vaddr, initAddrCode, codeSize);
+    alreadyRead = LoadData(physicalAddr, exe, mainMemory, vpn, vaddr, initAddrData, dataSize, alreadyRead);
+    LoadStack(physicalAddr, mainMemory, vpn, alreadyRead);
 
+  } else {
+    //Swap
+    ReadSwap(vpn, physicalAddr);
+  } 
+  
+  pageTable[vpn].valid = true;
+  
   return pageTable[vpn];
 }
+
+int AddressSpace::ReadSwap(int vpn, uint32_t physicalAddr){
+  char *mainMemory = machine->GetMMU()->mainMemory;
+  return swap_file->ReadAt(&mainMemory[physicalAddr], PAGE_SIZE, vpn * PAGE_SIZE);
+
+}
+
+int AddressSpace::WriteSwap(int vpn, uint32_t physicalAddr){
+  char *mainMemory = machine->GetMMU()->mainMemory;
+  return swap_file->WriteAt(&mainMemory[physicalAddr],PAGE_SIZE, vpn * PAGE_SIZE);
+
+}
+#endif
+
+
 /// Deallocate an address space.
 ///
 /// Nothing for now!
 AddressSpace::~AddressSpace()
 {
+  #ifdef VMEM
+    coreMap->FreePages();
+    delete swap_file;
+  #else
     for (unsigned i = 0; i < numPages; i++) {
         if(pageTable[i].physicalPage!=-1)
           pageMap->Clear(pageTable[i].physicalPage);
-        
     }
-
+  #endif
     
     delete [] pageTable;
 }

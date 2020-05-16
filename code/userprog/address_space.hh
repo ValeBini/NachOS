@@ -48,7 +48,14 @@ public:
     void SaveState();
     void RestoreState();
     OpenFile *executable_file;
+    OpenFile *swap_file;
+
+#ifdef VMEM
     TranslationEntry LoadPage(int vpn);
+
+    int ReadSwap(int vpn, uint32_t physicalAddr);
+    int WriteSwap(int vpn, uint32_t physicalAddr);
+#endif
 
     /// Assume linear page table translation for now!
     TranslationEntry *pageTable;

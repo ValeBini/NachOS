@@ -18,6 +18,7 @@
 #include "machine/timer.hh"
 #include "userprog/synch_console.hh"
 
+
 /// Initialization and cleanup routines.
 
 // Initialization, called before anything else.
@@ -40,7 +41,14 @@ extern Machine *machine;  // User program memory and registers.
 extern SynchConsole *synchConsole; // Synchronized Console.
 extern Table<Thread *> *activeThreads;
 extern Bitmap * pageMap;
+
+#ifdef VMEM
+#include "vmem/core_map.hh"
+extern CoreMap * coreMap; 
 #endif
+
+#endif
+
 
 #ifdef FILESYS_NEEDED  // *FILESYS* or *FILESYS_STUB*.
 #include "filesys/file_system.hh"

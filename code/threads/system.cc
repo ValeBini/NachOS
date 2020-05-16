@@ -48,11 +48,16 @@ SynchDisk *synchDisk;
 Machine *machine;  ///< User program memory and registers.
 SynchConsole *synchConsole; // Synchronized Console
 Table<Thread *> *activeThreads; // Active Threads
-Bitmap * pageMap; // Page Bit Map
+Bitmap *pageMap; // Page Bit Map
+
+#ifdef VMEM // 
+CoreMap *coreMap; 
+#endif
 
 #endif
 
-#ifdef NETWORK
+
+#ifdef NETWORK //
 PostOffice *postOffice;
 #endif
 
@@ -108,6 +113,7 @@ Initialize(int argc, char **argv)
 #ifdef USER_PROGRAM
     bool debugUserProg = false;  // Single step user program.
     activeThreads = new Table <Thread *>();
+
 #endif
 #ifdef FILESYS_NEEDED
     bool format = false;  // Format disk.
@@ -196,6 +202,11 @@ Initialize(int argc, char **argv)
     DEBUG('i',"system.cc");
     
     pageMap = new Bitmap(NUM_PHYS_PAGES);
+
+#ifdef VMEM
+    coreMap = new CoreMap();
+#endif
+
 #endif
 
 #ifdef FILESYS
@@ -229,6 +240,11 @@ Cleanup()
     delete synchConsole;
     delete activeThreads;
     delete pageMap;
+
+#ifdef VMEM
+    delete coreMap;
+#endif 
+
 #endif
 
 #ifdef FILESYS_NEEDED
