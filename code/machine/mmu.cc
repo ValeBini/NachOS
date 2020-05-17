@@ -170,18 +170,19 @@ MMU::RetrievePageEntry(unsigned vpn, TranslationEntry **entry) const
         return NO_EXCEPTION;
 
     } else {
-
-        unsigned i;
-        for (i = 0; i < TLB_SIZE; i++)
-            if (tlb[i].valid && tlb[i].virtualPage == vpn) {
-                *entry = &tlb[i];  // FOUND!
-                stats->numPageHits++;
-                return NO_EXCEPTION;
-            }
-
+        if(currentThread->space->pageTable[vpn].valid){
+            unsigned i;
+            for (i = 0; i < TLB_SIZE; i++)
+                if (tlb[i].valid && tlb[i].virtualPage == vpn) {
+                    *entry = &tlb[i];  // FOUND!
+                    stats->numPageHits++;
+                    DEBUG('T',"TLB Hit %d.\n",vpn);
+                    return NO_EXCEPTION;
+                }
+        }
         // Not found.
         DEBUG_CONT('a', "no valid TLB entry found for this virtual page!\n");
-        
+        DEBUG('T',"TLB Miss.\n");
         stats->numPageFaults++;
         return PAGE_FAULT_EXCEPTION;  // Really, this is a TLB fault, the
                                       // page may be in memory, but not in

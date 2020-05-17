@@ -395,15 +395,15 @@ SyscallHandler(ExceptionType _et)
 
 #ifdef VMEM
 
-int getVPN(int vaddr){
+unsigned int getVPN(unsigned int vaddr){
     return vaddr/PAGE_SIZE;
 }
 
 static void
 PageFaultHandler(ExceptionType et){
     static int i = 0;
-    int vaddr = machine->ReadRegister(BAD_VADDR_REG);
-    int vpn = getVPN(vaddr);
+    unsigned int vaddr = machine->ReadRegister(BAD_VADDR_REG);
+    unsigned int vpn = getVPN(vaddr);
 
     if (!currentThread->space->pageTable[vpn].valid)
         machine->GetMMU()->tlb[i] = currentThread->space->LoadPage(vpn);

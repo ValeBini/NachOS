@@ -9,6 +9,8 @@ CoreMap::CoreMap(){
     addrSpTable = new AddressSpace * [NUM_PHYS_PAGES];
     
     vpnTable = new unsigned int [NUM_PHYS_PAGES];
+
+    pagesOrder = new List<int>;
 }
 
 CoreMap::~CoreMap(){
@@ -19,13 +21,21 @@ CoreMap::~CoreMap(){
 
 int CoreMap::FindAPage(unsigned int vpn){
     
+
+    DEBUG('p',"PageMap finding a page\n");
     int phyPage = pageMap->Find();
-    
+
     if(phyPage == -1){ 
+
+        DEBUG('p',"PageMap did not find a page, picking a page to swap\n");
         phyPage = PickAPage();
+        DEBUG('p',"PickAPage choose the %d page\n",phyPage);
         addrSpTable[phyPage]->WriteSwap(vpnTable[phyPage], phyPage * PAGE_SIZE);
+    }else{
+        DEBUG('p',"PageMap found the %d page free\n",phyPage);
     }
 
+    DEBUG('l',"Appending %d\n",phyPage);
     pagesOrder->Append(phyPage);
     addrSpTable[phyPage] = currentThread->space;
     vpnTable[phyPage] = vpn;
@@ -35,7 +45,9 @@ int CoreMap::FindAPage(unsigned int vpn){
 
 //LOGICA PARA AGARRAR UNA PAGINA
 int CoreMap::PickAPage(){
+    // return 5;
     int pageIndex = pagesOrder->Pop();
+    DEBUG('l',"Popping %d\n",pageIndex);
     return pageIndex;
 }
 

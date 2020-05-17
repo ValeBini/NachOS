@@ -45,9 +45,6 @@ AddressSpace::AddressSpace(OpenFile *exe_file)
     strcat(filename,id);
     fileSystem->Create(filename,size);
     swap_file = fileSystem->Open(filename);
-
-    
-    ASSERT(numPages <= coreMap->CountClear());
 #else
     ASSERT(numPages <= pageMap->CountClear());
 #endif
@@ -182,37 +179,47 @@ TranslationEntry AddressSpace::LoadPage(int vpn){
   uint32_t vaddr = vpn * PAGE_SIZE;
   char *mainMemory = machine->GetMMU()->mainMemory;
 
+  int oldPhysicalPage = pageTable[vpn].physicalPage;
   int newPage = coreMap->FindAPage(vpn);
   
-  pageTable[vpn].physicalPage = (unsigned int)newPage;  
-  uint32_t physicalAddr = pageTable[vpn].physicalPage*PAGE_SIZE;
+  pageTable[vpn].physicalPage = newPage;  
+  int physicalAddr = pageTable[vpn].physicalPage*PAGE_SIZE;
     
-  if(pageTable[vpn].physicalPage == -1){
+  if(oldPhysicalPage == -1){
     // Binary
+    DEBUG('p',"Loading from binary page %u.\n", vpn);
     int alreadyRead = LoadCode(physicalAddr, exe, mainMemory, vpn, vaddr, initAddrCode, codeSize);
     alreadyRead = LoadData(physicalAddr, exe, mainMemory, vpn, vaddr, initAddrData, dataSize, alreadyRead);
     LoadStack(physicalAddr, mainMemory, vpn, alreadyRead);
 
   } else {
     //Swap
-    ReadSwap(vpn, physicalAddr);
+    DEBUG('p',"Loading from swap file page %u.\n", vpn);
+    int n = ReadSwap(vpn, physicalAddr);
+    ASSERT(n == PAGE_SIZE);
   } 
   
   pageTable[vpn].valid = true;
-  
+  pageTable[vpn].readOnly = false;
+  pageTable[vpn].dirty = false;
+  pageTable[vpn].use = false;
+
   return pageTable[vpn];
 }
 
 int AddressSpace::ReadSwap(int vpn, uint32_t physicalAddr){
   char *mainMemory = machine->GetMMU()->mainMemory;
+  DEBUG('p',"Reading from swap file. From: %u. To: %u. Virtual Page: %u.\n",vpn * PAGE_SIZE, physicalAddr,vpn);
   return swap_file->ReadAt(&mainMemory[physicalAddr], PAGE_SIZE, vpn * PAGE_SIZE);
-
 }
 
 int AddressSpace::WriteSwap(int vpn, uint32_t physicalAddr){
   char *mainMemory = machine->GetMMU()->mainMemory;
-  return swap_file->WriteAt(&mainMemory[physicalAddr],PAGE_SIZE, vpn * PAGE_SIZE);
-
+  DEBUG('p',"Writing at swap file. Position: %u. Virtual Page: %u.\n",vpn * PAGE_SIZE,vpn);
+  int n = swap_file->WriteAt(&mainMemory[physicalAddr],PAGE_SIZE, vpn * PAGE_SIZE);
+  pageTable[vpn].valid = false;
+  memset(&mainMemory[physicalAddr], 0, PAGE_SIZE);
+  return n;
 }
 #endif
 
