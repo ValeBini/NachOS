@@ -44,6 +44,7 @@ AddressSpace::AddressSpace(OpenFile *exe_file)
     strcpy(filename,"SWAP.");
     strcat(filename,id);
     fileSystem->Create(filename,size);
+    DEBUG('p', "Created swap file: %s\n", filename);
     swap_file = fileSystem->Open(filename);
 #else
     ASSERT(numPages <= pageMap->CountClear());
