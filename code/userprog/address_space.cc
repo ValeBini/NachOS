@@ -40,11 +40,13 @@ AddressSpace::AddressSpace(OpenFile *exe_file)
     char * id = new char[100];
 
     //itoa(currentThread->threadId,id,10);
-    strncpy(id, std::to_string(currentThread->threadId).c_str(), 100);
+    strncpy(id, std::to_string((long int)(this)).c_str(), 100);
     strcpy(filename,"SWAP.");
     strcat(filename,id);
     fileSystem->Create(filename,size);
+    DEBUG('p', "--------------------\n");
     DEBUG('p', "Created swap file: %s\n", filename);
+    DEBUG('p', "--------------------\n");
     swap_file = fileSystem->Open(filename);
 #else
     ASSERT(numPages <= pageMap->CountClear());
@@ -219,7 +221,7 @@ int AddressSpace::WriteSwap(int vpn, uint32_t physicalAddr){
   DEBUG('p',"Writing at swap file. Position: %u. Virtual Page: %u.\n",vpn * PAGE_SIZE,vpn);
   int n = swap_file->WriteAt(&mainMemory[physicalAddr],PAGE_SIZE, vpn * PAGE_SIZE);
   pageTable[vpn].valid = false;
-  memset(&mainMemory[physicalAddr], 0, PAGE_SIZE);
+  memset(&mainMemory[physicalAddr], -1, PAGE_SIZE);
   return n;
 }
 #endif

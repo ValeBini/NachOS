@@ -10,7 +10,7 @@
             "request": "launch",
             // "program": "${workspaceFolder}/code/threads/nachos",
             "program": "${workspaceFolder}/code/vmem/nachos",
-            "args": ["-x","sort","-d","epl"],
+            "args": ["-x","shell","-d","epT"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/code/userland",
             "environment": [],

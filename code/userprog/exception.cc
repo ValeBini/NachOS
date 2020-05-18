@@ -271,10 +271,10 @@ SyscallHandler(ExceptionType _et)
                 int i;
                 for(i = 0; i < size; i++) {
                     buffer[i] = synchConsole->GetChar();
-                    // if(buffer[i] == '\n') 
-                    //     break;
+                    if(buffer[i] == '\n') 
+                        break;
                 }
-                buffer[i] = 0;
+                buffer[i+1] = 0;
                 machine->WriteRegister(2, i);
             }
             else {

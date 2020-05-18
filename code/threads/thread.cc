@@ -63,6 +63,7 @@ Thread::Thread(const char *threadName, bool c )
     openFiles->Add(NULL);
     openFiles->Add(NULL);
     threadId = activeThreads->Add(this);
+    DEBUG('t', "New Thread with ID: %d\n", threadId);
     space    = nullptr;
 #endif
 }

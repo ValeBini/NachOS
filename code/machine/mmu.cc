@@ -176,7 +176,7 @@ MMU::RetrievePageEntry(unsigned vpn, TranslationEntry **entry) const
                 if (tlb[i].valid && tlb[i].virtualPage == vpn) {
                     *entry = &tlb[i];  // FOUND!
                     stats->numPageHits++;
-                    DEBUG('T',"TLB Hit %d.\n",vpn);
+                    DEBUG('T',"TLB Hit %d %u.\n",vpn,i);
                     return NO_EXCEPTION;
                 }
         }
