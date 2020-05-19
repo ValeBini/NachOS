@@ -26,7 +26,7 @@ int CoreMap::FindAPage(unsigned int vpn){
     int phyPage = pageMap->Find();
 
     if(phyPage == -1){ 
-
+        //ASSERT(false);
         DEBUG('p',"PageMap did not find a page, picking a page to swap\n");
         phyPage = PickAPage();
         DEBUG('p',"PickAPage choose the %d page\n",phyPage);
@@ -53,8 +53,8 @@ int CoreMap::PickAPage(){
 }
 
 
-void CoreMap::FreePages(){
-    AddressSpace *as = currentThread->space;
+void CoreMap::FreePages(AddressSpace *as){
+    // debug('M',"%s\n",currentThread->GetName(),currentThread->)
     for (unsigned i = 0; i < NUM_PHYS_PAGES; i++) {
         if(addrSpTable[i] == as) {
           pageMap->Clear(i); 

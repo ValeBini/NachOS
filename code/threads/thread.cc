@@ -95,7 +95,7 @@ Thread::~Thread()
 #ifdef USER_PROGRAM
     activeThreads->Remove(threadId);
     delete openFiles;
-    if(space) delete space;
+    if(space!=nullptr) delete space;
 #endif
 
     ASSERT(this != currentThread);

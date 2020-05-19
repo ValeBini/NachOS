@@ -184,7 +184,7 @@ TranslationEntry AddressSpace::LoadPage(int vpn){
 
   int oldPhysicalPage = pageTable[vpn].physicalPage;
   int newPage = coreMap->FindAPage(vpn);
-  
+  //ASSERT(newPage >= 0);
   pageTable[vpn].physicalPage = newPage;  
   int physicalAddr = pageTable[vpn].physicalPage*PAGE_SIZE;
     
@@ -196,6 +196,7 @@ TranslationEntry AddressSpace::LoadPage(int vpn){
     LoadStack(physicalAddr, mainMemory, vpn, alreadyRead);
 
   } else {
+    //ASSERT(false);
     //Swap
     DEBUG('p',"Loading from swap file page %u.\n", vpn);
     int n = ReadSwap(vpn, physicalAddr);
@@ -221,11 +222,10 @@ int AddressSpace::WriteSwap(int vpn, uint32_t physicalAddr){
   DEBUG('p',"Writing at swap file. Position: %u. Virtual Page: %u.\n",vpn * PAGE_SIZE,vpn);
   int n = swap_file->WriteAt(&mainMemory[physicalAddr],PAGE_SIZE, vpn * PAGE_SIZE);
   pageTable[vpn].valid = false;
-  memset(&mainMemory[physicalAddr], -1, PAGE_SIZE);
+  memset(&mainMemory[physicalAddr], 0, PAGE_SIZE);
   return n;
 }
 #endif
-
 
 /// Deallocate an address space.
 ///
@@ -233,7 +233,7 @@ int AddressSpace::WriteSwap(int vpn, uint32_t physicalAddr){
 AddressSpace::~AddressSpace()
 {
   #ifdef VMEM
-    coreMap->FreePages();
+    coreMap->FreePages(this);
     delete swap_file;
   #else
     for (unsigned i = 0; i < numPages; i++) {
@@ -283,7 +283,7 @@ AddressSpace::SaveState()
 /// On a context switch, restore the machine state so that this address space
 /// can run.
 ///
-/// For now, tell the machine where to find the page table.
+/// For now, tell the machine where 0 find the page table.
 void
 AddressSpace::RestoreState()
 {

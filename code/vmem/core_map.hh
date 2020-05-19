@@ -13,7 +13,7 @@ class CoreMap{
 
         int FindAPage(unsigned int vpn);
 
-        void FreePages();
+        void FreePages(AddressSpace *as);
 
         unsigned int CountClear();
         
