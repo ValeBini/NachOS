@@ -17,6 +17,10 @@ class CoreMap{
 
         unsigned int CountClear();
         
+#ifdef LRU
+        void usePage(int page);
+#endif
+        
     private:   
         int PickAPage();
         

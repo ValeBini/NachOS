@@ -176,6 +176,9 @@ MMU::RetrievePageEntry(unsigned vpn, TranslationEntry **entry) const
                 if (tlb[i].valid && tlb[i].virtualPage == vpn) {
                     *entry = &tlb[i];  // FOUND!
                     stats->numPageHits++;
+                #ifdef LRU
+                    coreMap->usePage(tlb[i].physicalPage);
+                #endif
                     DEBUG('T',"TLB Hit %d %u.\n",vpn,i);
                     return NO_EXCEPTION;
                 }

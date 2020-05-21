@@ -39,7 +39,10 @@ int CoreMap::FindAPage(unsigned int vpn, AddressSpace * space){
     }
 
     DEBUG('l',"Appending %d\n",phyPage);
+
+#ifndef LRU
     pagesOrder->Append(phyPage);
+#endif
     addrSpTable[phyPage] = space;
     vpnTable[phyPage] = vpn;
 
@@ -69,3 +72,12 @@ void CoreMap::FreePages(AddressSpace *as){
 unsigned int CoreMap::CountClear(){
     return pageMap->CountClear();
 }
+
+#ifdef LRU
+
+void CoreMap::usePage(int page){
+    pagesOrder->Remove(page);
+    pagesOrder->Append(page);
+}
+
+#endif
