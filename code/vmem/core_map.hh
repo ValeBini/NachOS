@@ -11,7 +11,7 @@ class CoreMap{
 
         ~CoreMap();
 
-        int FindAPage(unsigned int vpn);
+        int FindAPage(unsigned int vpn, AddressSpace * space);
 
         void FreePages(AddressSpace *as);
 

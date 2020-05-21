@@ -20,8 +20,6 @@
 AddressSpace::AddressSpace(OpenFile *exe_file)
 {
 
-    
-
     ASSERT(exe_file != nullptr);
 
     exe = new Executable (exe_file);
@@ -36,18 +34,18 @@ AddressSpace::AddressSpace(OpenFile *exe_file)
     size = numPages * PAGE_SIZE;
  
 #ifdef VMEM
-    char * filename = new char[100];
+    fileName = new char[100];
     char * id = new char[100];
 
     //itoa(currentThread->threadId,id,10);
     strncpy(id, std::to_string((long int)(this)).c_str(), 100);
-    strcpy(filename,"SWAP.");
-    strcat(filename,id);
-    fileSystem->Create(filename,size);
+    strcpy(fileName,"SWAP.");
+    strcat(fileName,id);
+    fileSystem->Create(fileName,size);
     DEBUG('p', "--------------------\n");
-    DEBUG('p', "Created swap file: %s\n", filename);
+    DEBUG('p', "Created swap file: %s\n", fileName);
     DEBUG('p', "--------------------\n");
-    swap_file = fileSystem->Open(filename);
+    swap_file = fileSystem->Open(fileName);
 #else
     ASSERT(numPages <= pageMap->CountClear());
 #endif
@@ -183,7 +181,7 @@ TranslationEntry AddressSpace::LoadPage(int vpn){
   char *mainMemory = machine->GetMMU()->mainMemory;
 
   int oldPhysicalPage = pageTable[vpn].physicalPage;
-  int newPage = coreMap->FindAPage(vpn);
+  int newPage = coreMap->FindAPage(vpn, this);
   //ASSERT(newPage >= 0);
   pageTable[vpn].physicalPage = newPage;  
   int physicalAddr = pageTable[vpn].physicalPage*PAGE_SIZE;
@@ -220,9 +218,14 @@ int AddressSpace::ReadSwap(int vpn, uint32_t physicalAddr){
 int AddressSpace::WriteSwap(int vpn, uint32_t physicalAddr){
   char *mainMemory = machine->GetMMU()->mainMemory;
   DEBUG('p',"Writing at swap file. Position: %u. Virtual Page: %u.\n",vpn * PAGE_SIZE,vpn);
-  int n = swap_file->WriteAt(&mainMemory[physicalAddr],PAGE_SIZE, vpn * PAGE_SIZE);
+
   pageTable[vpn].valid = false;
+  int n = swap_file->WriteAt(&mainMemory[physicalAddr],PAGE_SIZE, vpn * PAGE_SIZE);
   memset(&mainMemory[physicalAddr], 0, PAGE_SIZE);
+  for(unsigned i=0; i<TLB_SIZE; i++){
+    if(machine->GetMMU()->tlb[i].virtualPage == (unsigned)vpn)
+      machine->GetMMU()->tlb[i].valid = false;
+  }
   return n;
 }
 #endif
@@ -235,6 +238,7 @@ AddressSpace::~AddressSpace()
   #ifdef VMEM
     coreMap->FreePages(this);
     delete swap_file;
+    fileSystem->Remove(fileName);
   #else
     for (unsigned i = 0; i < numPages; i++) {
         if(pageTable[i].physicalPage!=-1)

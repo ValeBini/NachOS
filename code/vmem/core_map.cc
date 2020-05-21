@@ -17,9 +17,10 @@ CoreMap::~CoreMap(){
     delete pageMap;
     delete [] addrSpTable;
     delete [] vpnTable;
+    delete pagesOrder;
 }
 
-int CoreMap::FindAPage(unsigned int vpn){
+int CoreMap::FindAPage(unsigned int vpn, AddressSpace * space){
     
 
     DEBUG('p',"PageMap finding a page\n");
@@ -31,6 +32,7 @@ int CoreMap::FindAPage(unsigned int vpn){
         phyPage = PickAPage();
         DEBUG('p',"PickAPage choose the %d page\n",phyPage);
         int n = addrSpTable[phyPage]->WriteSwap(vpnTable[phyPage], phyPage * PAGE_SIZE);
+
         ASSERT(n == PAGE_SIZE);
     }else{
         DEBUG('p',"PageMap found the %d page free\n",phyPage);
@@ -38,7 +40,7 @@ int CoreMap::FindAPage(unsigned int vpn){
 
     DEBUG('l',"Appending %d\n",phyPage);
     pagesOrder->Append(phyPage);
-    addrSpTable[phyPage] = currentThread->space;
+    addrSpTable[phyPage] = space;
     vpnTable[phyPage] = vpn;
 
     return phyPage;

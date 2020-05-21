@@ -60,6 +60,7 @@ public:
     /// Assume linear page table translation for now!
     TranslationEntry *pageTable;
     Executable * exe;
+    char * fileName;
 private:
 
     /// Number of pages in the virtual address space.
