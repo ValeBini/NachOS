@@ -180,13 +180,12 @@ TranslationEntry AddressSpace::LoadPage(int vpn){
   uint32_t vaddr = vpn * PAGE_SIZE;
   char *mainMemory = machine->GetMMU()->mainMemory;
 
-  int oldPhysicalPage = pageTable[vpn].physicalPage;
   int newPage = coreMap->FindAPage(vpn, this);
   //ASSERT(newPage >= 0);
   pageTable[vpn].physicalPage = newPage;  
   int physicalAddr = pageTable[vpn].physicalPage*PAGE_SIZE;
     
-  if(oldPhysicalPage == -1){
+  if(!pageTable[vpn].inSwap){
     // Binary
     DEBUG('p',"Loading from binary page %u.\n", vpn);
     int alreadyRead = LoadCode(physicalAddr, exe, mainMemory, vpn, vaddr, initAddrCode, codeSize);
@@ -218,9 +217,15 @@ int AddressSpace::ReadSwap(int vpn, uint32_t physicalAddr){
 int AddressSpace::WriteSwap(int vpn, uint32_t physicalAddr){
   char *mainMemory = machine->GetMMU()->mainMemory;
   DEBUG('p',"Writing at swap file. Position: %u. Virtual Page: %u.\n",vpn * PAGE_SIZE,vpn);
-
   pageTable[vpn].valid = false;
-  int n = swap_file->WriteAt(&mainMemory[physicalAddr],PAGE_SIZE, vpn * PAGE_SIZE);
+  int n;
+  //ASSERT(pageTable[vpn].dirty==false);
+  if(pageTable[vpn].dirty==false) {
+    n = PAGE_SIZE;
+  }else{
+    n = swap_file->WriteAt(&mainMemory[physicalAddr],PAGE_SIZE, vpn * PAGE_SIZE);
+    pageTable[vpn].inSwap = true;
+  }
   memset(&mainMemory[physicalAddr], 0, PAGE_SIZE);
   for(unsigned i=0; i<TLB_SIZE; i++){
     if(machine->GetMMU()->tlb[i].virtualPage == (unsigned)vpn)
@@ -282,7 +287,18 @@ AddressSpace::InitRegisters()
 /// For now, nothing!
 void
 AddressSpace::SaveState()
-{}
+{
+    #ifdef VMEM
+    TranslationEntry *tlb = machine -> GetMMU() -> tlb;
+    for(unsigned i = 0; i < TLB_SIZE; i++){
+          if(tlb[i].valid){
+              unsigned pageIndex = tlb[i].virtualPage;
+              pageTable[pageIndex].use = tlb[i].use;
+              pageTable[pageIndex].dirty = tlb[i].dirty;
+          }
+      }
+    #endif
+}
 
 /// On a context switch, restore the machine state so that this address space
 /// can run.
@@ -300,3 +316,4 @@ AddressSpace::RestoreState()
     machine->GetMMU()->pageTableSize = numPages;
     #endif
 }
+

@@ -97,7 +97,7 @@ Table<T>::HasKey(int i) const
     if (i>=0)
         return i < current && !freed.Has(i);
     else 
-        return -1;
+        return false;
 }
 
 template <class T>
