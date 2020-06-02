@@ -91,7 +91,7 @@ class OpenFile {
 public:
 
     /// Open a file whose header is located at `sector` on the disk.
-    OpenFile(int sector);
+    OpenFile(int sector, const char * name = nullptr);
 
     /// Close the file.
     ~OpenFile();
@@ -114,8 +114,11 @@ public:
     // the UNIX idiom -- `lseek` to end of file, `tell`, `lseek` back).
     unsigned Length() const;
 
+    char * GetName();
+
   private:
     FileHeader *hdr;  ///< Header for this file.
+    char * fileName;
     unsigned seekPosition;  ///< Current position within the file.
 };
 

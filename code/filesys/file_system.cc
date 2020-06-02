@@ -48,6 +48,7 @@
 #include "file_header.hh"
 #include "lib/bitmap.hh"
 #include "machine/disk.hh"
+#include "openfile_map.hh"
 
 #include <stdio.h>
 #include <string.h>
@@ -233,7 +234,7 @@ FileSystem::Open(const char *name)
     dir->FetchFrom(directoryFile);
     int sector = dir->Find(name);
     if (sector >= 0)
-        openFile = new OpenFile(sector);  // `name` was found in directory.
+        openFile = new OpenFile(sector,name);  // `name` was found in directory.
     delete dir;
     return openFile;  // Return null if not found.
 }
