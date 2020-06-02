@@ -1,5 +1,14 @@
+#ifndef OPENFILE_MAP
+#define OPENFILE_MAP
+
 #include "reader_writer.hh"
+#include "threads/synch.hh"
+
 #include <map>
+#include <string.h>
+
+class Lock;
+class ReaderWriter;
 
 class MetaData{
     public: 
@@ -7,33 +16,13 @@ class MetaData{
         Lock* linkLock;
         ReaderWriter* rw; 
         
-        MetaData(const char * name){
-            links = 0;
-            linkLock = new Lock("MetaData Link Lock");
-            rw = new ReaderWriter(name);
-        }
+        MetaData(const char * name);
 
-        ~MetaData(){
-            delete linkLock;
-            delete rw;
-        }
+        ~MetaData();
 
-        void IncrementLinks(){
-            linkLock->Acquire();
-            links++;
-            linkLock->Release();
-        }
+        void IncrementLinks();
         
-        bool DecrementLinks(){
-            linkLock->Acquire();
-            links--;
-            if(links == 0){
-                linkLock->Release();
-                return false; // Hay que Borrarlo.    
-            }
-            linkLock->Release();
-            return true;
-        }
+        bool DecrementLinks();
 };
 
 
@@ -46,47 +35,23 @@ struct cmp_str
 };
 
 
-#include <map>
+// #include <map>
 // using namespace std;
 class OpenFilesMap{
 private:
     std::map<const char *,MetaData*,cmp_str> * metaData;
     
 public:
-    OpenFilesMap(){
-        metaData = new std::map<const char*, MetaData*,cmp_str>;
-    }
-    ~OpenFilesMap(){ 
-        delete metaData;   
-    }
+    OpenFilesMap();
+    ~OpenFilesMap();
 
-    void Open(const char * name){
-        if(metaData->count(name)==0){      //Primera vez que se habre el archivo
-            MetaData* temp = new MetaData(name);
-            temp->IncrementLinks();
-            metaData->insert(std::make_pair(name,temp)); 
-        }else{                              //Alguien ya abrio el archivo
-            (*metaData)[name]->IncrementLinks();
-        }
-        
-    }
+    void Open(const char * name);
     
-    void Close(const char * name){
-        bool readyToBeDeleted = (*metaData)[name]->DecrementLinks();
-        if(readyToBeDeleted){
-            delete (*metaData)[name];
-            metaData->erase(name);
-        }
-    }
+    void Close(const char * name);
 /*
-    void Remove(char * name){
-        bool readyToBeDeleted = (*metaData)[name]->DecrementLinks();
-        if(radyToBeDelete){
-            
-        }
-    }
+    void Remove(char * name);
 */
-    ReaderWriter* GetRW(const char* name){
-        return (*metaData)[name]->rw;
-    }
+    ReaderWriter* GetRW(const char* name);
 };
+
+#endif

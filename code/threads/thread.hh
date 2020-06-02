@@ -51,6 +51,7 @@
 
 #endif
 
+class AddressSpace;
 class Channel;
 
 /// CPU register state to be saved on context switch.

@@ -79,6 +79,9 @@ static const unsigned DIRECTORY_FILE_SIZE = sizeof (DirectoryEntry)
 /// * `format` -- should we initialize the disk?
 FileSystem::FileSystem(bool format)
 {
+    
+    openFilesMap = new OpenFilesMap();
+
     DEBUG('f', "Initializing the file system.\n");
     if (format) {
         Bitmap     *freeMap = new Bitmap(NUM_SECTORS);

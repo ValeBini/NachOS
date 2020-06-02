@@ -48,5 +48,6 @@ void
 ReaderWriter::ReaderRelease(){
     rCounterLock->Acquire();
     rCounter--;
+    if (rCounter == 0) noReaders->Signal();
     rCounterLock->Release();
 }

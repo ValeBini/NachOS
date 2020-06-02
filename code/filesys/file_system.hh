@@ -38,6 +38,11 @@
 
 #include "open_file.hh"
 
+//#ifndef FILESYS_STUB 
+#include "openfile_map.hh"
+//#endif
+
+class OpenFilesMap;
 
 #ifdef FILESYS_STUB  // Temporarily implement file system calls as calls to
                      // UNIX, until the real file system implementation is
@@ -110,6 +115,7 @@ public:
     void Print();
 
 private:
+    OpenFilesMap * openFilesMap;
     OpenFile *freeMapFile;  ///< Bit map of free disk blocks, represented as a
                             ///< file.
     OpenFile *directoryFile;  ///< “Root” directory -- list of file names,
