@@ -406,9 +406,9 @@ PageFaultHandler(ExceptionType et){
     int vpn = getVPN(vaddr);
 
     if (!currentThread->space->pageTable[vpn].valid)
-        machine->GetMMU()->tlb[i] = currentThread->space->LoadPage(vpn);
+        machine->GetMMU()->tlb[i]= (currentThread->space->LoadPage(vpn));
     else
-        machine->GetMMU()->tlb[i] = currentThread->space->pageTable[vpn];
+        machine->GetMMU()->tlb[i]= &(currentThread->space->pageTable[vpn]);
 
     i = (i+1)%TLB_SIZE;
 }

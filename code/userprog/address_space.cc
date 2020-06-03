@@ -65,6 +65,7 @@ AddressSpace::AddressSpace(OpenFile *exe_file)
 #ifdef VMEM
         pageTable[i].physicalPage = -1;
         pageTable[i].valid        = false;
+        pageTable[i].inSwap       = false;
 #else
         int newPage = pageMap->Find();
         ASSERT(newPage != -1);
@@ -170,7 +171,7 @@ uint32_t LoadStack(uint32_t physicalAddr, char* mainMemory, uint32_t vpn, uint32
 }
 
 
-TranslationEntry AddressSpace::LoadPage(int vpn){
+TranslationEntry * AddressSpace::LoadPage(int vpn){
 
   
   uint32_t codeSize = exe->GetCodeSize();
@@ -205,7 +206,7 @@ TranslationEntry AddressSpace::LoadPage(int vpn){
   pageTable[vpn].dirty = false;
   pageTable[vpn].use = false;
 
-  return pageTable[vpn];
+  return &pageTable[vpn];
 }
 
 int AddressSpace::ReadSwap(int vpn, uint32_t physicalAddr){
@@ -228,8 +229,8 @@ int AddressSpace::WriteSwap(int vpn, uint32_t physicalAddr){
   }
   memset(&mainMemory[physicalAddr], 0, PAGE_SIZE);
   for(unsigned i=0; i<TLB_SIZE; i++){
-    if(machine->GetMMU()->tlb[i].virtualPage == (unsigned)vpn)
-      machine->GetMMU()->tlb[i].valid = false;
+    if(machine->GetMMU()->tlb[i]->virtualPage == (unsigned)vpn)
+      machine->GetMMU()->tlb[i]->valid = false;
   }
   return n;
 }
@@ -288,17 +289,24 @@ AddressSpace::InitRegisters()
 void
 AddressSpace::SaveState()
 {
+    // ASSERT(false);
     #ifdef VMEM
-    TranslationEntry *tlb = machine -> GetMMU() -> tlb;
+    TranslationEntry ** tlb = machine -> GetMMU() -> tlb;
     for(unsigned i = 0; i < TLB_SIZE; i++){
-          if(tlb[i].valid){
-              unsigned pageIndex = tlb[i].virtualPage;
-              pageTable[pageIndex].use = tlb[i].use;
-              pageTable[pageIndex].dirty = tlb[i].dirty;
+          if(tlb[i]->valid){
+              unsigned pageIndex = tlb[i]->virtualPage;
+              pageTable[pageIndex].use = tlb[i]->use;
+              pageTable[pageIndex].dirty = tlb[i]->dirty;
           }
       }
     #endif
 }
+
+
+
+
+
+
 
 /// On a context switch, restore the machine state so that this address space
 /// can run.
@@ -309,7 +317,7 @@ AddressSpace::RestoreState()
 {
     #ifdef VMEM
     for(int i = 0 ; i < (int)TLB_SIZE; i++){
-      machine->GetMMU()->tlb[i].valid = false;
+      machine->GetMMU()->tlb[i] = machine->GetMMU()->tlbDefaultEntry;
     }    
     #else 
     machine->GetMMU()->pageTable     = pageTable;

@@ -39,10 +39,13 @@ MMU::MMU()
     for (unsigned i = 0; i < MEMORY_SIZE; i++)
           mainMemory[i] = 0;
 
-#ifdef USE_TLB
-    tlb = new TranslationEntry[TLB_SIZE];
-    for (unsigned i = 0; i < TLB_SIZE; i++)
-        tlb[i].valid = false;
+#ifdef USE_TLB 
+    tlb = new TranslationEntry * [TLB_SIZE];
+    tlbDefaultEntry = new TranslationEntry;
+    tlbDefaultEntry->valid = false;
+    for (unsigned i = 0; i < TLB_SIZE; i++){
+        tlb[i] = tlbDefaultEntry;
+    }
     pageTable = nullptr;
 #else  // Use linear page table.
     tlb = nullptr;
@@ -173,11 +176,11 @@ MMU::RetrievePageEntry(unsigned vpn, TranslationEntry **entry) const
         if(currentThread->space->pageTable[vpn].valid){
             unsigned i;
             for (i = 0; i < TLB_SIZE; i++)
-                if (tlb[i].valid && tlb[i].virtualPage == vpn) {
-                    *entry = &tlb[i];  // FOUND!
+                if (tlb[i]->valid && tlb[i]->virtualPage == vpn) {
+                    *entry = tlb[i];  // FOUND!
                     stats->numPageHits++;
                 #ifdef LRU
-                    coreMap->usePage(tlb[i].physicalPage);
+                    coreMap->usePage(tlb[i]->physicalPage);
                 #endif
                     DEBUG('T',"TLB Hit %d %u.\n",vpn,i);
                     return NO_EXCEPTION;

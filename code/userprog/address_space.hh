@@ -51,7 +51,7 @@ public:
     OpenFile *swap_file;
 
 #ifdef VMEM
-    TranslationEntry LoadPage(int vpn);
+    TranslationEntry * LoadPage(int vpn);
 
     int ReadSwap(int vpn, uint32_t physicalAddr);
     int WriteSwap(int vpn, uint32_t physicalAddr);
