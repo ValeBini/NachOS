@@ -174,7 +174,13 @@ SyscallHandler(ExceptionType _et)
             DEBUG('e', "`Open` requested for file `%s`.\n", filename);
             
             OpenFile *openFile = fileSystem->Open(filename);
-            ASSERT(openFile!=nullptr);
+
+            if (openFile == nullptr) {
+                DEBUG('e', "Error: error opening the file %s.\n", filename);
+                machine->WriteRegister(2, -1);
+                break;
+            }
+            
             int index = currentThread->openFiles->Add(openFile);
             
             if(index == -1) {
