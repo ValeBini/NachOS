@@ -399,11 +399,24 @@ int getVPN( int vaddr){
     return vaddr/PAGE_SIZE;
 }
 
+void savePageState(TranslationEntry tlbEntry){
+    TranslationEntry* pageTable = currentThread->space->pageTable;
+    int vpn = tlbEntry.virtualPage;
+
+    if (pageTable[vpn].valid) {
+        pageTable[vpn].dirty = tlbEntry.dirty;
+        pageTable[vpn].use = tlbEntry.use;
+    } 
+}
+
 static void
 PageFaultHandler(ExceptionType et){
     static int i = 0;
     int vaddr = machine->ReadRegister(BAD_VADDR_REG);
     int vpn = getVPN(vaddr);
+
+    if (machine->GetMMU()->tlb[i].valid)
+        savePageState(machine->GetMMU()->tlb[i]);
 
     if (!currentThread->space->pageTable[vpn].valid)
         machine->GetMMU()->tlb[i] = currentThread->space->LoadPage(vpn);
