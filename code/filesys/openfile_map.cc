@@ -25,10 +25,10 @@ MetaData::DecrementLinks(){
     links--;
     if(links == 0){
         linkLock->Release();
-        return false; // Hay que Borrarlo.    
+        return true; // Hay que Borrarlo.    
     }
     linkLock->Release();
-    return true;
+    return false;
 }
 
 

@@ -114,8 +114,9 @@ public:
     /// List all the files and their contents.
     void Print();
 
-private:
     OpenFilesMap * openFilesMap;
+
+private:
     OpenFile *freeMapFile;  ///< Bit map of free disk blocks, represented as a
                             ///< file.
     OpenFile *directoryFile;  ///< “Root” directory -- list of file names,

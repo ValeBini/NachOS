@@ -120,7 +120,7 @@ FileWrite()
     printf("Sequential write of %u byte file, in %u byte chunks\n",
            FILE_SIZE, CONTENT_SIZE);
 
-    if (!fileSystem->Create(FILE_NAME, 0)) {
+    if (!fileSystem->Create(FILE_NAME, FILE_SIZE)) {
         fprintf(stderr, "Perf test: cannot create %s\n", FILE_NAME);
         return;
     }

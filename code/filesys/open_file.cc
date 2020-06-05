@@ -28,9 +28,10 @@ OpenFile::OpenFile(int sector, const char * name)
         int n = strlen(name);
         fileName = new char [n+1];
         strcpy(fileName,name);
-    } else 
+        fileSystem->openFilesMap->Open(fileName);    
+    } else {
         fileName = nullptr;
-
+    }
     hdr = new FileHeader;
     hdr->FetchFrom(sector);
     seekPosition = 0;
@@ -43,6 +44,8 @@ char * OpenFile::GetName(){
 /// Close a Nachos file, de-allocating any in-memory data structures.
 OpenFile::~OpenFile()
 {
+    if(fileName != nullptr)
+        fileSystem->openFilesMap->Close(fileName);
     delete hdr;
 }
 
@@ -73,9 +76,16 @@ OpenFile::Read(char *into, unsigned numBytes)
 {
     ASSERT(into != nullptr);
     ASSERT(numBytes > 0);
-
+    ReaderWriter* rw;
+    if(fileName != nullptr) {
+        rw = fileSystem->openFilesMap->GetRW(fileName);
+        rw->ReaderAcquire();
+    }
+    
     int result = ReadAt(into, numBytes, seekPosition);
     seekPosition += result;
+
+    if(fileName != nullptr) rw->ReaderRelease();
     return result;
 }
 
@@ -84,9 +94,16 @@ OpenFile::Write(const char *into, unsigned numBytes)
 {
     ASSERT(into != nullptr);
     ASSERT(numBytes > 0);
+    ReaderWriter* rw;
+    if(fileName != nullptr) {
+        rw = fileSystem->openFilesMap->GetRW(fileName);
+        rw->WriterAcquire();
+    }
 
     int result = WriteAt(into, numBytes, seekPosition);
     seekPosition += result;
+
+    if(fileName != nullptr) rw->WriterRelease();
     return result;
 }
 

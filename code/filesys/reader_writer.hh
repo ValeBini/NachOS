@@ -19,7 +19,6 @@ class ReaderWriter{
         void ReaderRelease();
 
     private:
-        Lock* writerLock;
         int rCounter;
         Lock* rCounterLock;
         Condition* noReaders;
