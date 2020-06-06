@@ -33,6 +33,7 @@ OpenFile::OpenFile(int sector, const char * name)
         fileName = nullptr;
     }
     hdr = new FileHeader;
+    
     hdr->FetchFrom(sector);
     seekPosition = 0;
 }

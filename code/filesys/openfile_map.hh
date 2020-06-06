@@ -15,6 +15,7 @@ class MetaData{
         int links;
         Lock* linkLock;
         ReaderWriter* rw; 
+        bool removed;
         
         MetaData(const char * name);
 
@@ -48,10 +49,12 @@ public:
     void Open(const char * name);
     
     void Close(const char * name);
-/*
-    void Remove(char * name);
-*/
-    ReaderWriter* GetRW(const char* name);
+
+    bool Remove(const char * name);
+
+    ReaderWriter* GetRW(const char * name);
+
+    bool checkNotRemoved(const char * name);
 };
 
 #endif

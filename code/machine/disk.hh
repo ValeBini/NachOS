@@ -54,7 +54,7 @@
 const unsigned SECTOR_SIZE = 128;       ///< Number of bytes per disk sector.
 const unsigned SECTORS_PER_TRACK = 32;  ///< Number of sectors per disk
                                         ///< track.
-const unsigned NUM_TRACKS = 32;         ///< Number of tracks per disk.
+const unsigned NUM_TRACKS = 32*4;         ///< Number of tracks per disk.
 const unsigned NUM_SECTORS = SECTORS_PER_TRACK * NUM_TRACKS;
   ///< Total # of sectors per disk.
 

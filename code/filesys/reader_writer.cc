@@ -22,19 +22,23 @@ ReaderWriter::~ReaderWriter(){
 
 void 
 ReaderWriter::WriterAcquire(){
+    DEBUG('W', "WriterAcquire %s \n",rCounterLock->GetName());
     if(!rCounterLock->IsHeldByCurrentThread()) rCounterLock->Acquire();
     while (rCounter > 0) noReaders->Wait();
 }
 
 void
 ReaderWriter::WriterRelease(){
+    DEBUG('W', "WriterRelease %s \n",rCounterLock->GetName());
     noReaders->Signal();
     rCounterLock->Release();
 }
 
 void
 ReaderWriter::ReaderAcquire(){
+    DEBUG('W', "ReaderAcquire %s \n",rCounterLock->GetName());
     if(!(rCounterLock->IsHeldByCurrentThread())){
+        DEBUG('W', "IsNotHeldByCurrentThread \n");
         rCounterLock->Acquire();
         rCounter++;
         rCounterLock->Release();
@@ -43,7 +47,9 @@ ReaderWriter::ReaderAcquire(){
 
 void
 ReaderWriter::ReaderRelease(){
+    DEBUG('W',"Release Reader. %s\n",rCounterLock->GetName());
     if(!(rCounterLock->IsHeldByCurrentThread())){
+        DEBUG('W', "IsNotHeldByCurrentThread \n");
         rCounterLock->Acquire();
         rCounter--;
         if (rCounter == 0) noReaders->Broadcast();

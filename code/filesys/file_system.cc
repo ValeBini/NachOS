@@ -230,13 +230,16 @@ FileSystem::Open(const char *name)
 {
     ASSERT(name != nullptr);
 
+
+
     Directory *dir = new Directory(NUM_DIR_ENTRIES);
     OpenFile  *openFile = nullptr;
 
     DEBUG('f', "Opening file %s\n", name);
     dir->FetchFrom(directoryFile);
     int sector = dir->Find(name);
-    if (sector >= 0)
+    if (sector >= 0 && openFilesMap->checkNotRemoved(name))
+    //if (sector >= 0)
         openFile = new OpenFile(sector,name);  // `name` was found in directory.
     delete dir;
     return openFile;  // Return null if not found.
@@ -259,28 +262,32 @@ FileSystem::Remove(const char *name)
 {
     ASSERT(name != nullptr);
 
-    Directory *dir = new Directory(NUM_DIR_ENTRIES);
-    dir->FetchFrom(directoryFile);
-    int sector = dir->Find(name);
-    if (sector == -1) {
-       delete dir;
-       return false;  // file not found
+    if(openFilesMap->Remove(name)){
+        DEBUG('F',"Efectivamenmte borrando %s.\n",name);
+        Directory *dir = new Directory(NUM_DIR_ENTRIES);
+        dir->FetchFrom(directoryFile);
+        int sector = dir->Find(name);
+        if (sector == -1) {
+        delete dir;
+        return false;  // file not found
+        }
+        FileHeader *fileH = new FileHeader;
+        fileH->FetchFrom(sector);
+
+        Bitmap *freeMap = new Bitmap(NUM_SECTORS);
+        freeMap->FetchFrom(freeMapFile);
+
+        fileH->Deallocate(freeMap);  // Remove data blocks.
+        freeMap->Clear(sector);      // Remove header block.
+        dir->Remove(name);
+
+        freeMap->WriteBack(freeMapFile);  // Flush to disk.
+        dir->WriteBack(directoryFile);    // Flush to disk.
+        delete fileH;
+        delete dir;
+        delete freeMap;
     }
-    FileHeader *fileH = new FileHeader;
-    fileH->FetchFrom(sector);
-
-    Bitmap *freeMap = new Bitmap(NUM_SECTORS);
-    freeMap->FetchFrom(freeMapFile);
-
-    fileH->Deallocate(freeMap);  // Remove data blocks.
-    freeMap->Clear(sector);      // Remove header block.
-    dir->Remove(name);
-
-    freeMap->WriteBack(freeMapFile);  // Flush to disk.
-    dir->WriteBack(directoryFile);    // Flush to disk.
-    delete fileH;
-    delete dir;
-    delete freeMap;
+    
     return true;
 }
 

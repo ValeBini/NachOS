@@ -18,6 +18,8 @@
 #include "machine/timer.hh"
 #include "userprog/synch_console.hh"
 
+class Scheduler;
+class FileSystem;
 
 /// Initialization and cleanup routines.
 
