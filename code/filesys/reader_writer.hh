@@ -22,6 +22,8 @@ class ReaderWriter{
         int rCounter;
         Lock* rCounterLock;
         Condition* noReaders;
+        char * lname;
+        char * cname;
 };
 
 #endif

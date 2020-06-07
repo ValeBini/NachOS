@@ -26,6 +26,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#define TEST_EJ1
+
 
 static const unsigned TRANSFER_SIZE = 10;  // Make it small, just to be
                                            // difficult.
@@ -111,10 +113,82 @@ Print(const char *name)
 
 static const char FILE_NAME[] = "TestFile";
 static const char CONTENTS[] = "1234567890";
+#ifdef TEST_EJ1
+static const unsigned CONTENT_SIZE = 1;
+static const unsigned NUMBEROFTHREADS = 10;
+static const unsigned TIMES = 10;
+static const unsigned FILE_SIZE = CONTENT_SIZE * TIMES * NUMBEROFTHREADS;
+#else
 static const unsigned CONTENT_SIZE = sizeof CONTENTS - 1;
 static const unsigned FILE_SIZE = CONTENT_SIZE * 5000;
+#endif
+
+
+#ifdef TEST_EJ1
 
 static void
+FileWrite(char * c)
+{
+    printf("Sequential write of %u byte file, in %u byte chunks\n",
+           FILE_SIZE, CONTENT_SIZE);
+
+    OpenFile *openFile = fileSystem->Open(FILE_NAME);
+    if (openFile == nullptr) {
+        fprintf(stderr, "Perf test: unable to open %s\n", FILE_NAME);
+        return;
+    }
+    openFile->Seek(((*c)-'A')* 10);
+    for (unsigned i = 0; i < TIMES ; i++) {
+        int numBytes = openFile->Write(c, CONTENT_SIZE);
+        if (numBytes < int(CONTENT_SIZE)) {
+            fprintf(stderr, "Perf test: UNABLE TO WRITE %s\n", FILE_NAME);
+            break;
+        }
+    }
+
+    delete openFile;
+}
+
+static void
+FileRead()
+{
+    printf("Sequential read of %u byte file, in %u byte chunks\n",
+           FILE_SIZE, CONTENT_SIZE);
+
+    OpenFile *openFile = fileSystem->Open(FILE_NAME);
+    if (openFile == nullptr) {
+        fprintf(stderr, "Perf test: unable to open file %s\n", FILE_NAME);
+        return;
+    }
+
+    char *buffer = new char [CONTENT_SIZE];
+    for (unsigned i = 0; i < FILE_SIZE; i += CONTENT_SIZE) {
+        int numBytes = openFile->Read(buffer, CONTENT_SIZE);
+        buffer[1] = 0;
+        // fprintf(stderr,"Read: %s\n",buffer);
+        //  if (numBytes < int(CONTENT_SIZE)) {
+        //      printf("Perf test: unable to read %s\n", FILE_NAME);
+        //      break;
+        //  }
+    }
+
+    delete [] buffer;
+    delete openFile;
+}
+
+void simpleThread(void * c){
+    printf("Starting file system performance test: %s\n",(char *)c);
+    FileWrite((char *) c);
+    FileRead();
+    if (!fileSystem->Remove(FILE_NAME)) {
+        printf("Perf test: unable to remove %s\n", FILE_NAME);
+        return;
+    }
+    printf("Ending file system performance test\n");
+}
+
+#else 
+
 FileWrite()
 {
     printf("Sequential write of %u byte file, in %u byte chunks\n",
@@ -157,7 +231,7 @@ FileRead()
     char *buffer = new char [CONTENT_SIZE];
     for (unsigned i = 0; i < FILE_SIZE; i += CONTENT_SIZE) {
         int numBytes = openFile->Read(buffer, CONTENT_SIZE);
-        if (numBytes < 10 || strncmp(buffer, CONTENTS, CONTENT_SIZE)) {
+        if (numBytes < CONTENT_SIZE || strncmp(buffer, CONTENTS, CONTENT_SIZE)) {
             printf("Perf test: unable to read %s\n", FILE_NAME);
             break;
         }
@@ -167,9 +241,36 @@ FileRead()
     delete openFile;
 }
 
+#endif
+
+
+
+
+
 void
 PerformanceTest()
-{
+{   
+
+#ifdef TEST_EJ1
+  if (!fileSystem->Create(FILE_NAME, FILE_SIZE)) {
+    fprintf(stderr, "Perf test: cannot create %s\n", FILE_NAME);
+    return;
+  }
+  int n = NUMBEROFTHREADS;
+  Thread **threads = new Thread * [n];
+  char ** arg = new char * [NUMBEROFTHREADS];
+  for(int i=0; i<n; i++){
+    char * c = new char [64];
+    strncpy(c, std::to_string(i).c_str(), 64);
+    threads[i] = new Thread(c);
+    arg[i] = new char[2];
+    arg[i][1] = 0;
+    arg[i][0] = 'A' + i;
+    threads[i]->Fork(simpleThread, (void *) arg[i]);
+  }
+
+
+#else
     printf("Starting file system performance test:\n");
     stats->Print();
     FileWrite();
@@ -179,4 +280,5 @@ PerformanceTest()
         return;
     }
     stats->Print();
+#endif
 }

@@ -10,7 +10,7 @@
             "request": "launch",
             // "program": "${workspaceFolder}/code/threads/nachos",
             "program": "${workspaceFolder}/code/filesys/nachos",
-            "args": ["-f","-tf"],
+            "args": ["-x","sort","-d","FW"],
             "stopAtEntry": false,
             // "cwd": "${workspaceFolder}/code/userland",
             "cwd": "${workspaceFolder}/code/filesys/",
@@ -24,7 +24,7 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "make",
+            // "preLaunchTask": "make",
             "miDebuggerPath": "/usr/bin/gdb"
         }
     ]

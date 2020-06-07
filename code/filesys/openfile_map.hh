@@ -46,6 +46,8 @@ public:
     OpenFilesMap();
     ~OpenFilesMap();
 
+    Lock* mapLock;
+
     void Open(const char * name);
     
     void Close(const char * name);

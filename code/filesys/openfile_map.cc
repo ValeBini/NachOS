@@ -45,15 +45,18 @@ MetaData::DecrementLinks(){
 
 OpenFilesMap::OpenFilesMap(){
     metaData = new std::map<const char*, MetaData*,cmp_str>;
+    mapLock = new Lock("mapLock");
 }
+
 OpenFilesMap::~OpenFilesMap(){ 
     delete metaData;   
+    delete mapLock;
 }
 
 void 
 OpenFilesMap::Open(const char * name){
     DEBUG('F',"INCIO OPEN %s -----------\n", name);
-
+    mapLock->Acquire();
     if(metaData->count(name)==0){      //Primera vez que se habre el archivo
         DEBUG('F',"Open %s : Primera vez\n", name);
         MetaData* temp = new MetaData(name);
@@ -63,13 +66,15 @@ OpenFilesMap::Open(const char * name){
         DEBUG('F',"Open %s : Archivo sin nombre\n",name);
         (*metaData)[name]->IncrementLinks();
     }
-
+    mapLock->Release();
     DEBUG('F',"FIN OPEN %s -----------\n", name);
 }
 
 void 
 OpenFilesMap::Close(const char * name){
     DEBUG('F',"INCIO CLOSE %s -----------\n", name);
+
+    mapLock->Acquire();
     bool remove = false;
     bool readyToBeDeleted = (*metaData)[name]->DecrementLinks();
     if(readyToBeDeleted){
@@ -79,27 +84,31 @@ OpenFilesMap::Close(const char * name){
         metaData->erase(name);
         if (remove) {
             DEBUG('F',"Close %s : Se borra ARCHIVO.\n", name);
+            mapLock->Release();
             fileSystem->Remove(name);
-        }
-    }
+        } else mapLock->Release();
+    } else mapLock->Release();
+    
     DEBUG('F',"FIN CLOSE %s -----------\n", name);
 }
 
 bool 
 OpenFilesMap::Remove(const char * name){
     DEBUG('F',"INCIO REMOVE %s -----------\n", name);
-
+    mapLock->Acquire();
     if(metaData->count(name)==0){
         DEBUG('F',"Remove %s : NO Esta abierto por ningún programa.\n",name);
         DEBUG('F',"FIN REMOVE %s -----------\n", name);
+        
         return true;
     } else {
         DEBUG('F',"Remove %s : Esta abierto por algún programa.\n",name);
         (*metaData)[name]->removed = true;
         DEBUG('F',"FIN REMOVE %s -----------\n", name);
+        
         return false;
     }
-
+    
 }
 
 ReaderWriter* 

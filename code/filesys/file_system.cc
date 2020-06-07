@@ -269,6 +269,7 @@ FileSystem::Remove(const char *name)
         int sector = dir->Find(name);
         if (sector == -1) {
         delete dir;
+        openFilesMap->mapLock->Release();
         return false;  // file not found
         }
         FileHeader *fileH = new FileHeader;
@@ -288,6 +289,7 @@ FileSystem::Remove(const char *name)
         delete freeMap;
     }
     
+    openFilesMap->mapLock->Release();
     return true;
 }
 

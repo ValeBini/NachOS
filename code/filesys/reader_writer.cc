@@ -4,13 +4,14 @@
 ReaderWriter::ReaderWriter(const char* name){
     int n = strlen(name);
 
-    char lname [n+15];
+    lname = new char [n+15];
+    cname = new char [n+16];
     
-    snprintf(lname, n+13, "%s rCounterLock", name);
+    snprintf(lname, n+14, "%s rCounterLock", name);
     rCounterLock = new Lock(lname);
 
-    snprintf(lname, n+14, "%s noReadersCond", name);
-    noReaders = new Condition(lname, rCounterLock);
+    snprintf(cname, n+15, "%s noReadersCond", name);
+    noReaders = new Condition(cname, rCounterLock);
 
     rCounter = 0;
 }
@@ -18,6 +19,8 @@ ReaderWriter::ReaderWriter(const char* name){
 ReaderWriter::~ReaderWriter(){
     delete rCounterLock;
     delete noReaders;
+    delete [] lname;
+    delete [] cname;
 }
 
 void 
