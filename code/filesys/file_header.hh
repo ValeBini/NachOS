@@ -15,6 +15,7 @@
 
 #include "raw_file_header.hh"
 #include "lib/bitmap.hh"
+#include "lib/utility.hh"
 
 
 /// The following class defines the Nachos "file header" (in UNIX terms, the
