@@ -156,9 +156,10 @@ OpenFile::ReadAt(char *into, unsigned numBytes, unsigned position)
 
     // Read in all the full and partial sectors that we need.
     buf = new char [numSectors * SECTOR_SIZE];
-    for (unsigned i = firstSector; i <= lastSector; i++)
-        synchDisk->ReadSector(hdr->ByteToSector(i * SECTOR_SIZE),
-                              &buf[(i - firstSector) * SECTOR_SIZE]);
+    for (unsigned i = firstSector; i <= lastSector; i++){
+        unsigned sector = hdr->ByteToSector(i * SECTOR_SIZE);
+        synchDisk->ReadSector(sector, &buf[(i - firstSector) * SECTOR_SIZE]);
+    }
 
     // Copy the part we want.
     memcpy(into, &buf[position - firstSector * SECTOR_SIZE], numBytes);
@@ -204,9 +205,10 @@ OpenFile::WriteAt(const char *from, unsigned numBytes, unsigned position)
     memcpy(&buf[position - firstSector * SECTOR_SIZE], from, numBytes);
 
     // Write modified sectors back.
-    for (unsigned i = firstSector; i <= lastSector; i++)
-        synchDisk->WriteSector(hdr->ByteToSector(i * SECTOR_SIZE),
-                               &buf[(i - firstSector) * SECTOR_SIZE]);
+    for (unsigned i = firstSector; i <= lastSector; i++) {
+        unsigned sector = hdr->ByteToSector(i * SECTOR_SIZE);
+        synchDisk->WriteSector(sector, &buf[(i - firstSector) * SECTOR_SIZE]);
+    }
     delete [] buf;
     return numBytes;
 }

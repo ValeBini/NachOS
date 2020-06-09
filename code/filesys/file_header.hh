@@ -13,6 +13,8 @@
 #define NACHOS_FILESYS_FILEHEADER__HH
 
 
+// #define BIG_MAX_SIZE
+
 #include "raw_file_header.hh"
 #include "lib/bitmap.hh"
 #include "lib/utility.hh"
@@ -32,6 +34,7 @@
 /// There is no constructor; rather the file header can be initialized
 /// by allocating blocks for the file (if it is a new file), or by
 /// reading it from disk.
+
 class FileHeader {
 public:
 

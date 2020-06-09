@@ -29,7 +29,7 @@
 #include <ctype.h>
 #include <stdio.h>
 
-#define BIG_MAX_SIZE
+// #define BIG_MAX_SIZE
 
 
 
@@ -88,7 +88,8 @@ FileHeader::Allocate(Bitmap *freeMap, unsigned fileSize)
     for (unsigned i = 0; i < tableSectors; i++){ 
         unsigned secondIndSectors[TABLE_SIZE];
         unsigned j = 0;
-        for(;j<minn(TABLE_SIZE,dataLeftSectors);j++,dataLeftSectors--){
+        unsigned limite = minn(TABLE_SIZE,dataLeftSectors);
+        for(;j<limite;j++,dataLeftSectors--){
             secondIndSectors[j] = freeMap->Find();
         }
         
@@ -140,7 +141,8 @@ FileHeader::Deallocate(Bitmap *freeMap)
         synchDisk->ReadSector(firstIndSector[i], (char *) secondIndSectors);
 
         unsigned j = 0;
-        for(;j<minn(TABLE_SIZE,dataLeftSectors);j++,dataLeftSectors--){
+        unsigned limite = minn(TABLE_SIZE,dataLeftSectors);
+        for(;j<limite;j++,dataLeftSectors--){
             ASSERT(freeMap->Test(secondIndSectors[j]));  // ought to be marked!
             freeMap->Clear(secondIndSectors[j]);
         }
@@ -194,10 +196,9 @@ FileHeader::ByteToSector(unsigned offset)
     unsigned tableSectors = totalSectors - raw.numSectors - 1;      // TABLE
     unsigned dataLeftSectors = raw.numSectors;                      // FILEDATA Left
     
-    if(totalSectors <= NUM_DIRECT)                      //Case Direct
+    if((offset / SECTOR_SIZE) < NUM_DIRECT)                      //Case Direct
         return raw.dataSectors[offset / SECTOR_SIZE];
 
-    
     unsigned firstIndSector [TABLE_SIZE];
 
     synchDisk->ReadSector(raw.table, (char *) firstIndSector);
@@ -211,7 +212,6 @@ FileHeader::ByteToSector(unsigned offset)
     unsigned secondIndPos = ((offset - (SECTOR_SIZE * NUM_DIRECT)) % (TABLE_SIZE * SECTOR_SIZE) / SECTOR_SIZE);
     
     return secondIndSector[secondIndPos];
-    
 #else
     return raw.dataSectors[offset / SECTOR_SIZE];
 #endif
@@ -242,11 +242,11 @@ FileHeader::Print(const char *title)
            "    block indexes: ",
            raw.numBytes);
 
-    for (unsigned i = 0; i < raw.numSectors; i++)
+    for (unsigned i = 0; i < minn(NUM_DIRECT,raw.numSectors); i++)
         printf("%u ", raw.dataSectors[i]);
     printf("\n");
 
-    for (unsigned i = 0, k = 0; i < raw.numSectors; i++) {
+    for (unsigned i = 0, k = 0; i < minn(NUM_DIRECT,raw.numSectors); i++) {
         printf("    contents of block %u:\n", raw.dataSectors[i]);
         synchDisk->ReadSector(raw.dataSectors[i], data);
         for (unsigned j = 0; j < SECTOR_SIZE && k < raw.numBytes; j++, k++) {
@@ -280,7 +280,7 @@ FileHeader::Print(const char *title)
     // Direct
     if(totalSectors <= NUM_DIRECT){
         printf("Only direct blocks: \n");
-        for (unsigned i = 0; i < NUM_DIRECT; i++){
+        for (unsigned i = 0; i < totalSectors; i++){
                 contentSectors[sec] = raw.dataSectors[i];
                 sec++;
                 printf("%u ", raw.dataSectors[i]);
@@ -302,13 +302,18 @@ FileHeader::Print(const char *title)
 
     // Second Tables
 
-    for (unsigned i = 0; i < tableSectors-1 ; i++){
+    for (unsigned i = 0; i < tableSectors; i++){
         unsigned secondIndSector [TABLE_SIZE];
-        synchDisk->ReadSector(raw.table, (char *) secondIndSector);
+        synchDisk->ReadSector(firstIndSector[i], (char *) secondIndSector);
         
         printf("Second indirection table %u blocks: \n", i);
         
-        for (unsigned j = 0; j < TABLE_SIZE ; j++) {
+        
+        unsigned limite;
+        if(i == tableSectors-1) limite = (dataLeftSectors-NUM_DIRECT) % TABLE_SIZE;
+        else limite = TABLE_SIZE;
+
+        for (unsigned j = 0; j < limite ; j++) {
             printf("%u ", secondIndSector[j]);
             contentSectors[sec] = secondIndSector[j];
             sec++;
@@ -321,8 +326,9 @@ FileHeader::Print(const char *title)
 
 
     for (unsigned i = 0, k = 0; i < sec; i++) {
-        printf("    contents of block %u:\n", contentSectors[sec]);
-        synchDisk->ReadSector(contentSectors[sec], data);
+        printf("    contents of block %u:\n", contentSectors[i]);
+        
+        synchDisk->ReadSector(contentSectors[i], data);
         for (unsigned j = 0; j < SECTOR_SIZE && k < raw.numBytes; j++, k++) {
             if (isprint(data[j]))
                 printf("%c", data[j]);
@@ -332,7 +338,7 @@ FileHeader::Print(const char *title)
         printf("\n");
     }
     delete [] data;
-
+ 
 #endif
 }
 

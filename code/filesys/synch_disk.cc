@@ -14,7 +14,7 @@
 
 
 #include "synch_disk.hh"
-
+#include "system.hh"
 
 /// Disk interrupt handler.  Need this to be a C routine, because C++ cannot
 /// handle pointers to member functions.
@@ -55,11 +55,12 @@ void
 SynchDisk::ReadSector(int sectorNumber, char *data)
 {
     ASSERT(data != nullptr);
-
+    DEBUG('D',"AGARRA LOCK READ %s \n",currentThread->GetName());
     lock->Acquire();  // Only one disk I/O at a time.
     disk->ReadRequest(sectorNumber, data);
     semaphore->P();   // Wait for interrupt.
     lock->Release();
+    DEBUG('D',"SUELTA LOCK READ %s \n",currentThread->GetName());
 }
 
 /// Write the contents of a buffer into a disk sector.  Return only
@@ -72,10 +73,13 @@ SynchDisk::WriteSector(int sectorNumber, const char *data)
 {
     ASSERT(data != nullptr);
 
+    DEBUG('D',"AGARRA LOCK WRITE %s\n",currentThread->GetName());
     lock->Acquire();  // only one disk I/O at a time
+
     disk->WriteRequest(sectorNumber, data);
     semaphore->P();   // wait for interrupt
     lock->Release();
+    DEBUG('D',"SUELTA LOCK WRITE %s\n",currentThread->GetName());
 }
 
 /// Disk interrupt handler.  Wake up any thread waiting for the disk
