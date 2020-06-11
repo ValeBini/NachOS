@@ -262,6 +262,8 @@ FileSystem::Remove(const char *name)
 {
     ASSERT(name != nullptr);
 
+    openFilesMap->mapLock->Acquire();
+
     if(openFilesMap->Remove(name)){
         DEBUG('F',"Efectivamenmte borrando %s.\n",name);
         Directory *dir = new Directory(NUM_DIR_ENTRIES);

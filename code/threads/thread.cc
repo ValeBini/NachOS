@@ -195,6 +195,14 @@ Thread::Print() const
 void
 Thread::Finish(int exitStatus)
 {
+
+#ifdef USER_PROGRAM
+    if(space != nullptr){
+        delete space->swap_file;
+        fileSystem->Remove(space->fileName);
+    }
+#endif
+
     interrupt->SetLevel(INT_OFF);
     ASSERT(this == currentThread);
 

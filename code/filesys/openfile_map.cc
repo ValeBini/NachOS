@@ -95,7 +95,7 @@ OpenFilesMap::Close(const char * name){
 bool 
 OpenFilesMap::Remove(const char * name){
     DEBUG('F',"INCIO REMOVE %s -----------\n", name);
-    mapLock->Acquire();
+    
     if(metaData->count(name)==0){
         DEBUG('F',"Remove %s : NO Esta abierto por ningún programa.\n",name);
         DEBUG('F',"FIN REMOVE %s -----------\n", name);
@@ -118,8 +118,10 @@ OpenFilesMap::GetRW(const char* name){
 
 bool
 OpenFilesMap::checkNotRemoved(const char * name){
+    mapLock->Acquire();
     if(metaData->count(name)==0){
         DEBUG('F',"Checking if not removed.%s. Not open files map. Remove\n",name);
+        mapLock->Release();
         return true;
     }
     if(!(*metaData)[name]->removed){
@@ -128,5 +130,6 @@ OpenFilesMap::checkNotRemoved(const char * name){
 
         DEBUG('F',"Checking if not removed.%s. Not ready to be removed\n",name);
     }
+    mapLock->Release();
     return !(*metaData)[name]->removed;
 }

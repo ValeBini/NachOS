@@ -242,8 +242,8 @@ AddressSpace::~AddressSpace()
 {
   #ifdef VMEM
     coreMap->FreePages(this);
-    delete swap_file;
-    fileSystem->Remove(fileName);
+    // delete swap_file;
+    // fileSystem->Remove(fileName);
   #else
     for (unsigned i = 0; i < numPages; i++) {
         if(pageTable[i].physicalPage!=-1)
