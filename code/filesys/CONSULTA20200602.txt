@@ -1,5 +1,0 @@
-- Exit, sigue corriendo nuestro NachOS.
-- Que sería "serializables"? Puede haber 2 reads al mismo tiempo?
-- Sería como lectores escritores?
-- Hay un openfile por archivo o por (proceso,archivo)?
-- Que guardamos en la tabla? Nombre Archivo, OpenFiles.

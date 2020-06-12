@@ -199,7 +199,9 @@ Thread::Finish(int exitStatus)
 #ifdef USER_PROGRAM
     if(space != nullptr){
         delete space->swap_file;
+        space->swap_file = nullptr;
         fileSystem->Remove(space->fileName);
+
     }
 #endif
 

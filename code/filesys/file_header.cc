@@ -29,7 +29,6 @@
 #include <ctype.h>
 #include <stdio.h>
 
-// #define BIG_MAX_SIZE
 
 
 
@@ -120,6 +119,7 @@ FileHeader::Deallocate(Bitmap *freeMap)
     ASSERT(freeMap != nullptr);
 
 #ifdef BIG_MAX_SIZE
+    ASSERT(false);
     unsigned totalSectors = NeededSectors(raw.numSectors);       // TABLE + FILEDATA
     unsigned tableSectors = totalSectors - raw.numSectors - 1;      // TABLE
     unsigned dataLeftSectors = raw.numSectors;                      // FILEDATA Left

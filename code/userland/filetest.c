@@ -16,7 +16,7 @@ int
 main(void)
 { 
     char buffer[12];
-    Create("test.txt");
+    // Create("test.txt");
     OpenFileId o = Open("test.txt");
     Write("Hello world\n",12,o);
     Close(o);

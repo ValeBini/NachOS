@@ -10,7 +10,7 @@
             "request": "launch",
             // "program": "${workspaceFolder}/code/threads/nachos",
             "program": "${workspaceFolder}/code/filesys/nachos",
-            "args": ["-x","shell","-d","DF"],
+            "args": ["-x","shell","-D"],
             "stopAtEntry": false,
             // "cwd": "${workspaceFolder}/code/userland",
             "cwd": "${workspaceFolder}/code/filesys/",

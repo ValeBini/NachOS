@@ -222,6 +222,8 @@ int AddressSpace::WriteSwap(int vpn, uint32_t physicalAddr){
   //ASSERT(pageTable[vpn].dirty==false);
   if(pageTable[vpn].dirty==false) {
     n = PAGE_SIZE;
+  }else if(swap_file == nullptr){
+    n = PAGE_SIZE;
   }else{
     n = swap_file->WriteAt(&mainMemory[physicalAddr],PAGE_SIZE, vpn * PAGE_SIZE);
     pageTable[vpn].inSwap = true;

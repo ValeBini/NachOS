@@ -150,7 +150,7 @@ SyscallHandler(ExceptionType _et)
 
             DEBUG('e', "`Create` requested for file `%s`.\n", filename);
             
-            ASSERT(fileSystem->Create(filename,1000));
+            ASSERT(fileSystem->Create(filename,100));
 
             break;
         }

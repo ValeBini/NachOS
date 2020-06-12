@@ -1,0 +1,30 @@
+./nachos -f -cp ../userland/shell shell -cp ../userland/cat cat  -cp ../userland/cp cp -cp ../userland/probando probando -cp ../userland/sort sort -cp ../userland/matmult matmult
+
+Hola Esteban,
+Como va?
+Estamos haciendo la plancha 5 ej2 y nos surgio un error que
+tambien tenemos en el ej1.
+
+Corremos nachos con shell, en este corremos un programa de usuario(lo llamamos `probando`) que hace un echo una sola vez y devuelve
+Luego notamos un comportamiento similar a que si hubiera dos hilos Main corriendo.
+El error es un isHeldByCurrentThread del lock del synchDisk.
+Ocurre cuando uno de estos "hilos main" hace un WriteSector y en el medio hace Sleep porque entra en la cola de un semáforo.
+Y el otro "hilo main" se despierta a hacer el delete del Swap, y cuando intenta leer el disco (ReadSector) dispara esta excepcion, ya que
+WriteSector y ReadSector usan el mismo Lock.
+
+Comprobamos que estos "Hilos mains" tinen el mismo puntero, y parecerian estar corriendo en paralelo.
+Esto es posible?
+
+Te lo podriamos mostrar en alguna consulta?
+
+
+git: https://github.com/ValeBini/NachOS/tree/practica5
+linea: ./nachos -f -cp ../userland/shell shell -cp ../userland/probando probando -x shell -d D
+luego correr `probando`, ingresar una palabra de menos de 10 caracteres y luego se puede ver:
+    
+    Ingrese un nombre de maximo 10 char: asd
+    asd
+    [D] AGARRA LOCK WRITE main
+    [D] AGARRA LOCK READ main 
+
+Saludos!
