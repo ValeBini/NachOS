@@ -13,7 +13,7 @@
 #define DIM  1024/2
 
 /// Size of physical memory; with code, we will run out of space!
-static int A[DIMM];
+int A[DIMM];
 
 int
 main(void)

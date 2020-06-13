@@ -119,7 +119,7 @@ FileHeader::Deallocate(Bitmap *freeMap)
     ASSERT(freeMap != nullptr);
 
 #ifdef BIG_MAX_SIZE
-    ASSERT(false);
+    
     unsigned totalSectors = NeededSectors(raw.numSectors);       // TABLE + FILEDATA
     unsigned tableSectors = totalSectors - raw.numSectors - 1;      // TABLE
     unsigned dataLeftSectors = raw.numSectors;                      // FILEDATA Left
@@ -128,6 +128,8 @@ FileHeader::Deallocate(Bitmap *freeMap)
         ASSERT(freeMap->Test(raw.dataSectors[i]));  // ought to be marked!
         freeMap->Clear(raw.dataSectors[i]);
     }
+
+    dataLeftSectors -= NUM_DIRECT;
     
     if(totalSectors <= NUM_DIRECT) return;
 
