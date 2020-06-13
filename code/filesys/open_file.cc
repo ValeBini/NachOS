@@ -33,7 +33,7 @@ OpenFile::OpenFile(int sector, const char * name)
         fileName = nullptr;
     }
     hdr = new FileHeader;
-    
+    hdrSector = sector;
     hdr->FetchFrom(sector);
     seekPosition = 0;
 }
@@ -172,6 +172,21 @@ OpenFile::WriteAt(const char *from, unsigned numBytes, unsigned position)
 {
     ASSERT(from != nullptr);
     ASSERT(numBytes > 0);
+
+#if defined (BIG_MAX_SIZE) && defined (EXT_SIZE)
+    unsigned limit = position + numBytes;
+    if (limit > hdr->GetRaw()->numBytes){
+        Bitmap *freeMap = new Bitmap(NUM_SECTORS);
+        freeMap->FetchFrom(fileSystem->freeMapFile);
+        
+        if (hdr->Resize(freeMap, limit)) {
+            hdr->WriteBack(hdrSector);
+            freeMap->WriteBack(fileSystem->freeMapFile);
+        }
+        
+        delete freeMap;
+    }
+#endif
 
     unsigned fileLength = hdr->FileLength();
     unsigned firstSector, lastSector, numSectors;

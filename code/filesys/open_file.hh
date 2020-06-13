@@ -118,6 +118,7 @@ public:
 
   private:
     FileHeader *hdr;  ///< Header for this file.
+    unsigned hdrSector;
     char * fileName;
     unsigned seekPosition;  ///< Current position within the file.
 };

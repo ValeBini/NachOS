@@ -58,6 +58,11 @@ public:
     /// Return the length of the file in bytes
     unsigned FileLength() const;
 
+    
+    #if defined (BIG_MAX_SIZE) && defined (EXT_SIZE)
+    // Resize
+    bool Resize(Bitmap *freeMap, unsigned fileSize);
+    #endif
     /// Print the contents of the file.
     void Print(const char *title);
 

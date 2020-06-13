@@ -182,6 +182,10 @@ FileSystem::Create(const char *name, unsigned initialSize)
 {
     ASSERT(name != nullptr);
 
+#if defined (BIG_MAX_SIZE) && defined (EXT_SIZE)
+    initialSize = 0;
+#endif
+
     DEBUG('f', "Creating file %s, size %u\n", name, initialSize);
 
     Directory *dir = new Directory(NUM_DIR_ENTRIES);

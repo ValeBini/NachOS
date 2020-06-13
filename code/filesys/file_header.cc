@@ -29,10 +29,6 @@
 #include <ctype.h>
 #include <stdio.h>
 
-
-
-
-
 #ifdef BIG_MAX_SIZE
 unsigned NeededSectors(unsigned numSectors){
     if(numSectors <= NUM_DIRECT){
@@ -41,6 +37,88 @@ unsigned NeededSectors(unsigned numSectors){
     return numSectors + 1 + DivRoundUp(numSectors - NUM_DIRECT , TABLE_SIZE);
 }
 #endif
+
+
+#if defined (BIG_MAX_SIZE) && defined (EXT_SIZE)
+bool
+FileHeader::Resize(Bitmap *freeMap, unsigned fileSize){
+    
+    ASSERT(freeMap != nullptr);
+
+    ASSERT(fileSize>raw.numBytes);
+
+    if (fileSize > MAX_FILE_SIZE)
+        return false;
+
+    unsigned oldSize = raw.numBytes;
+    unsigned oldNumSectors = raw.numSectors;
+    unsigned oldTableSectors = NeededSectors(raw.numSectors) - oldNumSectors;
+    
+    raw.numBytes = fileSize;
+    raw.numSectors = DivRoundUp(fileSize, SECTOR_SIZE);
+
+
+    unsigned totalSectors = NeededSectors(raw.numSectors);     // TABLE + FILEDATA
+    unsigned tableSectors = totalSectors - raw.numSectors - 1; // TABLE
+    unsigned dataLeftSectors = raw.numSectors;                    // FILEDATA Left
+
+    unsigned alreadyTableAll = 0;
+    unsigned alreadyDataAll = 0;
+
+    if (freeMap->CountClear() < raw.numSectors - oldNumSectors)
+        return false;  // Not enough space.
+    
+    for (unsigned i = 0; i < minn(totalSectors,NUM_DIRECT); i++){ // Allocate Direct
+        if (alreadyDataAll >= oldNumSectors)
+            raw.dataSectors[i] = freeMap->Find();
+        alreadyDataAll++;    
+    }
+
+    if(totalSectors <= NUM_DIRECT) 
+        return true;
+
+    dataLeftSectors -= NUM_DIRECT; 
+
+    unsigned firstIndSector [TABLE_SIZE];
+    
+    if (!raw.table){
+        raw.table = freeMap->Find();
+    }else{
+        synchDisk->ReadSector(raw.table, (char *) firstIndSector);
+    }
+    alreadyTableAll++;
+
+    for (unsigned i = 0; i < tableSectors; i++){ // Allocate First Indirect
+        if (alreadyTableAll >= oldTableSectors)
+            firstIndSector[i] = freeMap->Find();
+        alreadyTableAll++;
+    }        
+    synchDisk->WriteSector(raw.table, (char *) firstIndSector);
+
+
+    for (unsigned i = 0; i < tableSectors; i++){ 
+        unsigned secondIndSectors[TABLE_SIZE];
+        if(i < oldTableSectors){
+            synchDisk->ReadSector(firstIndSector[i],(char *) secondIndSectors);
+        }
+        unsigned j = 0;
+        unsigned limite = minn(TABLE_SIZE,dataLeftSectors);
+        for(;j<limite;j++,dataLeftSectors--){
+            if (alreadyDataAll >= oldNumSectors)
+                secondIndSectors[j] = freeMap->Find();
+            alreadyDataAll++;    
+        }
+        
+        synchDisk->WriteSector(firstIndSector[i], (char *) secondIndSectors);
+        
+    }
+
+    return true;
+}
+#endif
+
+
+
 
 /// Initialize a fresh file header for a newly created file.  Allocate data
 /// blocks for the file out of the map of free disk blocks.  Return false if
@@ -118,7 +196,7 @@ FileHeader::Deallocate(Bitmap *freeMap)
 {
     ASSERT(freeMap != nullptr);
 
-#ifdef BIG_MAX_SIZE
+#ifdef BIG_MAX_SIZE 
     
     unsigned totalSectors = NeededSectors(raw.numSectors);       // TABLE + FILEDATA
     unsigned tableSectors = totalSectors - raw.numSectors - 1;      // TABLE

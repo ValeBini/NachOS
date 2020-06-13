@@ -31,7 +31,6 @@ int CoreMap::FindAPage(unsigned int vpn, AddressSpace * space){
         DEBUG('p',"PageMap did not find a page, picking a page to swap\n");
         phyPage = PickAPage();
         DEBUG('p',"PickAPage choose the %d page\n",phyPage);
-   
         int n = addrSpTable[phyPage]->WriteSwap(vpnTable[phyPage], phyPage * PAGE_SIZE);
         ASSERT(n == PAGE_SIZE);
         

@@ -116,8 +116,8 @@ public:
 
     OpenFilesMap * openFilesMap;
 
-private:
     OpenFile *freeMapFile;  ///< Bit map of free disk blocks, represented as a
+private:
                             ///< file.
     OpenFile *directoryFile;  ///< “Root” directory -- list of file names,
                               ///< represented as a file.
