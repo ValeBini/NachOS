@@ -40,6 +40,10 @@
 
 //#ifndef FILESYS_STUB 
 #include "openfile_map.hh"
+#include "path.hh"
+
+class Directory;
+static const unsigned NUM_DIR_ENTRIES = 20;
 //#endif
 
 class OpenFilesMap;
@@ -97,7 +101,7 @@ public:
     ~FileSystem();
 
     /// Create a file (UNIX `creat`).
-    bool Create(const char *name, unsigned initialSize);
+    bool Create(const char *name, unsigned initialSize, std::string path = "/");
 
     /// Open a file (UNIX `open`).
     OpenFile *Open(const char *name);
@@ -117,6 +121,12 @@ public:
     OpenFilesMap * openFilesMap;
 
     OpenFile *freeMapFile;  ///< Bit map of free disk blocks, represented as a
+
+    // #ifdef DIR
+    bool Mkdir(std::string pathName, const char *name);
+
+    unsigned GoToPath(Path *path);
+    // #endif
 private:
                             ///< file.
     OpenFile *directoryFile;  ///< “Root” directory -- list of file names,

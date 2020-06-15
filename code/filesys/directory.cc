@@ -39,8 +39,10 @@ Directory::Directory(unsigned size)
     ASSERT(size > 0);
     raw.table = new DirectoryEntry [size];
     raw.tableSize = size;
-    for (unsigned i = 0; i < raw.tableSize; i++)
+    for (unsigned i = 0; i < raw.tableSize; i++){
         raw.table[i].inUse = false;
+        raw.table[i].isDirectory = false;
+    }
 }
 
 /// De-allocate directory data structure.
@@ -110,7 +112,7 @@ Directory::Find(const char *name)
 /// * `name` is the name of the file being added.
 /// * `newSector` is the disk sector containing the added file's header.
 bool
-Directory::Add(const char *name, int newSector)
+Directory::Add(const char *name, int newSector, bool isDirectory)
 {
     ASSERT(name != nullptr);
 
@@ -120,6 +122,7 @@ Directory::Add(const char *name, int newSector)
     for (unsigned i = 0; i < raw.tableSize; i++)
         if (!raw.table[i].inUse) {
             raw.table[i].inUse = true;
+            raw.table[i].isDirectory = isDirectory;
             strncpy(raw.table[i].name, name, FILE_NAME_MAX_LEN);
             raw.table[i].sector = newSector;
             return true;
@@ -148,8 +151,13 @@ void
 Directory::List() const
 {
     for (unsigned i = 0; i < raw.tableSize; i++)
-        if (raw.table[i].inUse)
+        if (raw.table[i].inUse){
+            if(raw.table[i].isDirectory)
+            printf("%s  (D)\n", raw.table[i].name);
+            if(!raw.table[i].isDirectory)
             printf("%s\n", raw.table[i].name);
+            
+            }
 }
 
 /// List all the file names in the directory, their `FileHeader` locations,
@@ -177,4 +185,33 @@ const RawDirectory *
 Directory::GetRaw() const
 {
     return &raw;
+}
+
+
+void
+Directory::PrintR(const char * name) const
+{
+    FileHeader *hdr = new FileHeader;
+
+    printf("\n\n\n ------------------------------ \nDirectory contents of %s:\n",name);
+    List();
+    for (unsigned i = 0; i < raw.tableSize; i++)
+        if (raw.table[i].inUse) {
+            // printf("\nDirectory entry:\n"
+            //        "    name: %s\n"
+            //        "    sector: %u\n",
+            //        raw.table[i].name, raw.table[i].sector);
+            hdr->FetchFrom(raw.table[i].sector);
+            //hdr->Print(nullptr);
+            if(raw.table[i].isDirectory){
+                Directory *dir = new Directory(NUM_DIR_ENTRIES);
+                OpenFile *dirFile = new OpenFile(raw.table[i].sector, raw.table[i].name);
+                dir->FetchFrom(dirFile);
+                dir->PrintR(raw.table[i].name);
+                delete dirFile;
+                delete dir;
+            }
+        }
+    //printf("\n ------------------------------ \n Finishing Directory\n\n\n");
+    delete hdr;
 }

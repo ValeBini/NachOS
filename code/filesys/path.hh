@@ -19,6 +19,6 @@ class Path{
         
         // Path * fromStrToPath();
 
-    private:
         list<string> path;
+    private:
 };

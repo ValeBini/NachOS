@@ -18,6 +18,8 @@ const unsigned FILE_NAME_MAX_LEN = 30;
 /// access them directly.
 class DirectoryEntry {
 public:
+    /// Is this directory entry a directory?
+    bool isDirectory;
     /// Is this directory entry in use?
     bool inUse;
     /// Location on disk to find the `FileHeader` for this file.

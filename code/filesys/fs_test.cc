@@ -23,10 +23,19 @@
 #include "threads/thread.hh"
 #include "threads/system.hh"
 
+// #include "filesys/file_header.cc"
+// #include "filesys/directory.cc"
+#include "filesys/file_system.hh"
+
 #include <stdio.h>
 #include <string.h>
 
-#define TEST_EJ1
+#include <string>
+
+using namespace std;
+
+//#define TEST_EJ1
+#define TEST_DIRECTORIES
 
 
 static const unsigned TRANSFER_SIZE = 10;  // Make it small, just to be
@@ -191,6 +200,7 @@ void simpleThread(void * c){
 
 #else 
 
+static void
 FileWrite()
 {
     printf("Sequential write of %u byte file, in %u byte chunks\n",
@@ -273,6 +283,18 @@ PerformanceTest()
 
 
 #else
+#ifdef TEST_DIRECTORIES
+
+    string l1 = "/";
+    string l2 = "/level1/";
+    fileSystem->Mkdir(l1,"level1");
+    fileSystem->Mkdir(l2,"level2");
+    fileSystem->Mkdir(l2,"level2.1");
+    fileSystem->Create("sort",1111,l1);
+    fileSystem->Create("sort",1111,l2);
+    
+  
+#else 
     printf("Starting file system performance test:\n");
     stats->Print();
     FileWrite();
@@ -282,5 +304,6 @@ PerformanceTest()
         return;
     }
     stats->Print();
+#endif
 #endif
 }

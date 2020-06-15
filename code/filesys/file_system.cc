@@ -40,7 +40,8 @@
 ///               2016-2020 Docentes de la Universidad Nacional de Rosario.
 /// All rights reserved.  See `copyright.h` for copyright notice and
 /// limitation of liability and disclaimer of warranty provisions.
-
+#ifndef NACHOS_FILESYS__HH
+#define NACHOS_FILESYS__HH
 
 #include "file_system.hh"
 #include "directory.hh"
@@ -52,6 +53,8 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <string>
+
 
 
 /// Sectors containing the file headers for the bitmap of free sectors, and
@@ -64,7 +67,7 @@ static const unsigned DIRECTORY_SECTOR = 1;
 /// supports extensible files, the directory size sets the maximum number of
 /// files that can be loaded onto the disk.
 static const unsigned FREE_MAP_FILE_SIZE = NUM_SECTORS / BITS_IN_BYTE;
-static const unsigned NUM_DIR_ENTRIES = 20;
+// static const unsigned NUM_DIR_ENTRIES = 20;
 static const unsigned DIRECTORY_FILE_SIZE = sizeof (DirectoryEntry)
                                             * NUM_DIR_ENTRIES;
 
@@ -177,19 +180,96 @@ FileSystem::~FileSystem()
 ///
 /// * `name` is the name of file to be created.
 /// * `initialSize` is the size of file to be created.
+//#ifdef DIR
+
+unsigned 
+FileSystem::GoToPath(Path *path){
+    
+    Directory *dir = new Directory(NUM_DIR_ENTRIES);
+    dir->FetchFrom(directoryFile);
+    int tempSector = DIRECTORY_SECTOR;
+    OpenFile * tempOpenFile ;
+    
+    for(std::string nextDir : path->path){
+        tempSector = dir->Find(nextDir.c_str());
+        tempOpenFile = new OpenFile(tempSector,nextDir.c_str());
+        dir->FetchFrom(tempOpenFile);
+
+        delete tempOpenFile;
+    }
+
+    delete dir;
+    return tempSector;
+}
+
+
 bool
-FileSystem::Create(const char *name, unsigned initialSize)
+FileSystem::Mkdir(std::string pathName, const char *name){
+
+    Path * path = new Path(pathName);
+
+    unsigned dirSector = GoToPath(path);
+    Directory *dir = new Directory(NUM_DIR_ENTRIES);
+    OpenFile *dirFile = new OpenFile(dirSector, pathName.c_str());
+    dir->FetchFrom(dirFile);
+    
+    
+    Bitmap *freeMap = new Bitmap(NUM_SECTORS);
+    freeMap->FetchFrom(freeMapFile);
+    
+    Directory *newDir = new Directory(NUM_DIR_ENTRIES);
+    
+    bool success;
+
+    int sector = freeMap->Find();
+
+    if (sector == -1)
+        success = false;  // No free block for file header.
+    else if (!dir->Add(name, sector, true))
+        success = false;  // No space in directory.
+    else {
+        FileHeader *h = new FileHeader;
+        success = h->Allocate(freeMap, DIRECTORY_FILE_SIZE);
+         
+        if (success) {
+            h->WriteBack(sector);
+            dir->WriteBack(dirFile);
+            OpenFile * newDirFile = new OpenFile(sector, (pathName + std::string(name)).c_str());
+            newDir->WriteBack(newDirFile);
+            freeMap->WriteBack(freeMapFile);
+            delete newDirFile;
+        }
+        delete h;
+    }
+    delete freeMap;
+
+    delete dirFile;
+    delete dir;
+    delete newDir;
+    return success;
+}
+//#endif
+
+bool
+FileSystem::Create(const char *name, unsigned initialSize, std::string pathName)
 {
     ASSERT(name != nullptr);
+
+    Path * path = new Path(pathName);
+
+    unsigned dirSector = GoToPath(path);
+    Directory *dir = new Directory(NUM_DIR_ENTRIES);
+    OpenFile *dirFile = new OpenFile(dirSector, pathName.c_str()); 
+
+    // SI ES EL RAIZ SE ABRE DENUEVOOOOOOOOOOO
+
+    dir->FetchFrom(dirFile);
 
 #if defined (BIG_MAX_SIZE) && defined (EXT_SIZE)
     initialSize = 0;
 #endif
 
     DEBUG('f', "Creating file %s, size %u\n", name, initialSize);
-
-    Directory *dir = new Directory(NUM_DIR_ENTRIES);
-    dir->FetchFrom(directoryFile);
 
     bool success;
 
@@ -211,7 +291,7 @@ FileSystem::Create(const char *name, unsigned initialSize)
             if (success) {
                 // Everything worked, flush all changes back to disk.
                 h->WriteBack(sector);
-                dir->WriteBack(directoryFile);
+                dir->WriteBack(dirFile);
                 freeMap->WriteBack(freeMapFile);
             }
             delete h;
@@ -219,6 +299,7 @@ FileSystem::Create(const char *name, unsigned initialSize)
         delete freeMap;
     }
     delete dir;
+    delete dirFile;
     return success;
 }
 
@@ -512,7 +593,8 @@ FileSystem::Print()
 
     printf("--------------------------------\n");
     dir->FetchFrom(directoryFile);
-    dir->Print();
+    //dir->Print();
+    dir->PrintR("MainDirectory");
     printf("--------------------------------\n");
 
     delete bitH;
@@ -520,3 +602,4 @@ FileSystem::Print()
     delete freeMap;
     delete dir;
 }
+#endif

@@ -17,6 +17,7 @@
 
 #include "raw_directory.hh"
 #include "open_file.hh"
+#include "file_system.hh"
 
 
 /// The following class defines a UNIX-like “directory”.  Each entry in the
@@ -47,7 +48,7 @@ public:
     int Find(const char *name);
 
     /// Add a file name into the directory.
-    bool Add(const char *name, int newSector);
+    bool Add(const char *name, int newSector, bool isDirectory = false);
 
     /// Remove a file from the directory.
     bool Remove(const char *name);
@@ -58,6 +59,8 @@ public:
     /// Verbose print of the contents of the directory -- all the file names
     /// and their contents.
     void Print() const;
+
+    void PrintR(const char * name) const;
 
     /// Get the raw directory structure.
     ///
