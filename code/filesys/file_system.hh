@@ -104,7 +104,7 @@ public:
     bool Create(const char *name, unsigned initialSize, std::string path = "/");
 
     /// Open a file (UNIX `open`).
-    OpenFile *Open(const char *name);
+    OpenFile *Open(const char *name,std::string pathName = "/");
 
     /// Delete a file (UNIX `unlink`).
     bool Remove(const char *name);
@@ -117,6 +117,7 @@ public:
 
     /// List all the files and their contents.
     void Print();
+    bool CheckIfExists(std::string pathToCheck);
 
     OpenFilesMap * openFilesMap;
 

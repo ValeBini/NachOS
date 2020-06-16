@@ -41,7 +41,11 @@ IsThreadStatus(ThreadStatus s)
 /// `Thread::Fork`.
 ///
 /// * `threadName` is an arbitrary string, useful for debugging.
-Thread::Thread(const char *threadName, bool c )
+#ifdef DIR
+Thread::Thread(const char *threadName, bool c, std::string fPath)
+#else
+Thread::Thread(const char *threadName, bool c)
+#endif
 {
     if(c){
 
@@ -65,6 +69,12 @@ Thread::Thread(const char *threadName, bool c )
     threadId = activeThreads->Add(this);
     DEBUG('t', "New Thread with ID: %d\n", threadId);
     space    = nullptr;
+#endif
+#ifdef DIR
+    if(fPath == "")
+        path = new Path("/");
+    else 
+        path = new Path(fPath);
 #endif
 }
 // Thread::Thread(const char *threadName)
@@ -105,6 +115,27 @@ Thread::~Thread()
     delete ch;
 
 }
+
+#ifdef DIR
+std::string
+Thread::GetPath(){
+    return path->FromPathToStr();
+}
+
+bool
+Thread::SetPath(std::string namePath){
+    bool success;
+    Path * auxPath = new Path(path->FromPathToStr());
+    auxPath->Merge(namePath);
+    if (fileSystem->CheckIfExists(auxPath->FromPathToStr())){
+        path->Merge(namePath);
+        success = true;
+    } else success = false;
+
+    delete auxPath;
+    return success;
+}
+#endif
 
 /// Invoke `(*func)(arg)`, allowing caller and callee to execute
 /// concurrently.

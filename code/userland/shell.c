@@ -121,8 +121,19 @@ main(void)
         if(line[0] == '&'){
             const SpaceId newProc = Exec(line+1, argv, 0);
         } else {
-            const SpaceId newProc = Exec(line, argv, 1);
-            Join(newProc);
+            if(line[0] == 'c' && line[1] == 'd' && line[2] == '\0'){
+                if(Chdir(line + 3) != -1){
+                    WriteError("Metira no es error :) anda Ok!.", OUTPUT);
+                }else{
+                    WriteError("Path invalido.", OUTPUT);
+                }
+            }else{
+
+                WriteError("Joacogil.", OUTPUT);
+                const SpaceId newProc = Exec(line, argv, 1);
+                Join(newProc);
+            }
+
         }
         // TODO: is it necessary to check for errors after `Join` too, or
         //       can you be sure that, with the implementation of the system

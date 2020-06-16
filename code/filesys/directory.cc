@@ -105,6 +105,17 @@ Directory::Find(const char *name)
     return -1;
 }
 
+int
+Directory::FindDirectory(const char *name)
+{
+    ASSERT(name != nullptr);
+
+    int i = FindIndex(name);
+    if (i != -1 && raw.table[i].isDirectory)
+        return raw.table[i].sector;
+    return -1;
+}
+
 /// Add a file into the directory.  Return true if successful; return false
 /// if the file name is already in the directory, or if the directory is
 /// completely full, and has no more space for additional file names.

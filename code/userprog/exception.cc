@@ -149,8 +149,12 @@ SyscallHandler(ExceptionType _et)
             }
 
             DEBUG('e', "`Create` requested for file `%s`.\n", filename);
-            
-            ASSERT(fileSystem->Create(filename,100));
+        
+        #ifdef DIR
+            ASSERT(fileSystem->Create(filename, 0, currentThread->GetPath()));
+        #else
+            ASSERT(fileSystem->Create(filename,1000));
+        #endif
 
             break;
         }
@@ -171,9 +175,17 @@ SyscallHandler(ExceptionType _et)
                 break;
             }
 
+        #ifdef DIR
+            DEBUG('e', "`Open` requested for file `%s` with path %s.\n", filename, currentThread->GetPath());
+        #else
             DEBUG('e', "`Open` requested for file `%s`.\n", filename);
+        #endif
             
+        #ifdef DIR
+            OpenFile *openFile = fileSystem->Open(filename, currentThread->GetPath());
+        #else
             OpenFile *openFile = fileSystem->Open(filename);
+        #endif
 
             if (openFile == nullptr) {
                 DEBUG('e', "Error: error opening the file %s.\n", filename);
@@ -330,15 +342,22 @@ SyscallHandler(ExceptionType _et)
 
             DEBUG('e', "`Exec` requested for file `%s`.\n", filename);
             
-
+        #ifdef DIR
+            OpenFile *executable = fileSystem->Open(filename, currentThread->GetPath());
+        #else
             OpenFile *executable = fileSystem->Open(filename);
+        #endif
             if (executable == nullptr) {
                 DEBUG('e',"Unable to open file %s\n", filename);
                 machine->WriteRegister(2, -1);
                 break;
             }
 
+        #ifdef DIR
+            Thread * thread = new Thread(filename, enableJoin, currentThread->GetPath());
+        #else
             Thread * thread = new Thread(filename,enableJoin);
+        #endif
 
             AddressSpace *space = new AddressSpace(executable);
             
@@ -388,6 +407,39 @@ SyscallHandler(ExceptionType _et)
             currentThread->Finish(status);
             break;
         }
+
+    #ifdef DIR
+        case SC_CHDIR:{
+
+            int pathAddr = machine->ReadRegister(4);
+            if (pathAddr == 0) {
+                DEBUG('e', "Error: address to path string is null.\n");
+                machine->WriteRegister(2, -1);
+                break;
+            }
+                
+
+            char path[FILE_NAME_MAX_LEN*10 + 1];
+            if (!ReadStringFromUser(pathAddr, path, sizeof path)) {
+                DEBUG('e', "Error: path string too long (maximum is %u bytes).\n",
+                      FILE_NAME_MAX_LEN);
+                machine->WriteRegister(2, -1);
+                break;
+            }
+
+            DEBUG('e', "`Chdir` requested for thread `%s` with path %s.\n", currentThread->GetName(), path);
+            
+            
+            if(!currentThread->SetPath(path)){
+                DEBUG('e', "Error: new path doesn't exist.\n");
+                machine->WriteRegister(2, -1);
+                break;
+            }
+
+            machine->WriteRegister(2,0);    
+            break;
+        }
+    #endif
 
         default:
             fprintf(stderr, "Unexpected system call: id %d.\n", scid);
@@ -465,3 +517,4 @@ SetExceptionHandlers()
 
     #endif
 }
+

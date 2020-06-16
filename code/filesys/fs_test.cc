@@ -27,6 +27,10 @@
 // #include "filesys/directory.cc"
 #include "filesys/file_system.hh"
 
+#ifdef DIR
+#include "filesys/path.hh"
+#endif
+
 #include <stdio.h>
 #include <string.h>
 
@@ -64,14 +68,38 @@ Copy(const char *from, const char *to)
           from, fileLength, to);
 
     // Create a Nachos file of the same length.
+
+    #ifdef DIR
+    int last = 0;
+    string path = "";
+    if(to[0]=='/'){
+        for(int i = 0; to[i]; i++) if(to[i] == '/') last = i;
+        for(int i = 0; i<last; i++) path += to[i];
+        last++;
+    }
+    if (!fileSystem->Create(to+last,fileLength,path)) {  // Create Nachos file.
+        printf("Copy: could not create output file %s\n", to);
+        fclose(fp);
+        return;
+    }
+
+    #else
+
     if (!fileSystem->Create(to, fileLength)) {  // Create Nachos file.
         printf("Copy: could not create output file %s\n", to);
         fclose(fp);
         return;
     }
 
+    #endif
 
+
+
+#ifdef DIR
+    OpenFile *openFile = fileSystem->Open(to+last,path);
+#else
     OpenFile *openFile = fileSystem->Open(to);
+#endif
     ASSERT(openFile != nullptr);
 
     // Copy the data in `TRANSFER_SIZE` chunks.

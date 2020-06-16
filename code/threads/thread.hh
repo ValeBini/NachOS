@@ -51,6 +51,11 @@
 
 #endif
 
+#ifdef DIR
+#include "filesys/path.hh"
+#include <string>
+#endif
+
 class AddressSpace;
 class Channel;
 
@@ -102,7 +107,11 @@ private:
 public:
 
     /// Initialize a `Thread`.
-    Thread(const char *debugName, bool c = false);
+#ifdef DIR   
+    Thread(const char *debugName, bool c = false, std::string = "");
+#else
+    Thread(const char *debugName, bool c = false);  
+#endif
     // Thread(const char *debugName);
 
     /// Deallocate a Thread.
@@ -144,7 +153,11 @@ public:
 
     void Print() const;
 
-    
+
+#ifdef DIR
+    std::string GetPath();
+    bool SetPath(std::string namePath);
+#endif
 
     
 
@@ -170,6 +183,11 @@ private:
     /// Allocate a stack for thread.  Used internally by `Fork`.
     void StackAllocate(VoidFunctionPtr func, void *arg);
 
+#ifdef DIR
+    Path * path;
+#endif
+
+
 #ifdef USER_PROGRAM
     /// User-level CPU register state.
     ///
@@ -192,6 +210,9 @@ public:
     SpaceId threadId;
     Table<OpenFile*>* openFiles;
 #endif
+
+
+
 };
 
 /// Magical machine-dependent routines, defined in `switch.s`.

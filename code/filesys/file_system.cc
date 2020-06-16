@@ -311,11 +311,30 @@ FileSystem::Create(const char *name, unsigned initialSize, std::string pathName)
 ///
 /// * `name` is the text name of the file to be opened.
 OpenFile *
-FileSystem::Open(const char *name)
+FileSystem::Open(const char *name, std::string pathName)
 {
     ASSERT(name != nullptr);
 
+#ifdef DIR
 
+    Path * path = new Path(pathName);
+    
+    unsigned dirSector = GoToPath(path);
+    Directory *dir = new Directory(NUM_DIR_ENTRIES);
+    OpenFile *dirFile = new OpenFile(dirSector, pathName.c_str()); 
+    OpenFile  *openFile = nullptr;
+    // SI ES EL RAIZ SE ABRE DENUEVOOOOOOOOOOO
+
+    DEBUG('f', "Opening file %s\n", name);
+    dir->FetchFrom(dirFile);
+    int sector = dir->Find(name);
+    if (sector >= 0 && openFilesMap->checkNotRemoved((pathName+string("/")+string(name)).c_str()))
+    //if (sector >= 0)
+       openFile = new OpenFile(sector,(pathName+string("/")+string(name)).c_str());  // `name` was found in directory.
+    delete dir;
+    return openFile;  // Return null if not found.
+
+#else
 
     Directory *dir = new Directory(NUM_DIR_ENTRIES);
     OpenFile  *openFile = nullptr;
@@ -328,6 +347,8 @@ FileSystem::Open(const char *name)
         openFile = new OpenFile(sector,name);  // `name` was found in directory.
     delete dir;
     return openFile;  // Return null if not found.
+
+#endif
 }
 
 /// Delete a file from the file system.
@@ -377,6 +398,29 @@ FileSystem::Remove(const char *name)
     }
     
     openFilesMap->mapLock->Release();
+    return true;
+}
+
+bool
+FileSystem::CheckIfExists(std::string pathToCheck){
+    Path * path = new Path(pathToCheck);
+
+    Directory *dir = new Directory(NUM_DIR_ENTRIES);
+    dir->FetchFrom(directoryFile);
+
+    int tempSector = DIRECTORY_SECTOR;
+    OpenFile * tempOpenFile ;
+    
+    for(std::string nextDir : path->path){
+        tempSector = dir->FindDirectory(nextDir.c_str());
+        if(tempSector == -1) return false;
+        tempOpenFile = new OpenFile(tempSector,nextDir.c_str());
+
+        dir->FetchFrom(tempOpenFile);
+
+        delete tempOpenFile;
+    }
+
     return true;
 }
 

@@ -1,3 +1,6 @@
+#ifndef PATH
+#define PATH
+
 #include <algorithm>
 #include <iostream>
 #include <iterator>
@@ -15,10 +18,15 @@ class Path{
 
         ~Path();
 
-        string fromPathToStr();
+        string FromPathToStr();
         
         // Path * fromStrToPath();
+
+        void Merge(string cdPath);
+        void Set(string newPath);
 
         list<string> path;
     private:
 };
+
+#endif

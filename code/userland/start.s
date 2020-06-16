@@ -93,6 +93,14 @@ Create:
         j       $31
         .end    Create
 
+        .globl  Chdir
+        .ent    Chdir
+Chdir:
+        addiu   $2, $0, SC_CHDIR
+        syscall
+        j       $31
+        .end    Chdir
+
         .globl  Remove
         .ent    Remove
 Remove:

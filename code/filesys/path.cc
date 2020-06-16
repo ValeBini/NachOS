@@ -1,3 +1,7 @@
+
+
+
+
 #include "filesys/path.hh" 
 // #include <string>
 // #include <sstream>
@@ -7,8 +11,11 @@
 
 using namespace std;
 
-Path::Path(string newPath){
-  
+void
+Path::Set(string newPath){
+    
+    path.clear();
+
     stringstream check1(newPath); 
 
     string intermediate; 
@@ -21,10 +28,15 @@ Path::Path(string newPath){
     } 
 }
 
+
+Path::Path(string newPath){
+    Set(newPath);
+}
+
 Path::~Path(){}
 
 string
-Path::fromPathToStr(){
+Path::FromPathToStr(){
 string res = "";;
     if(path.empty()) return "/";
     for(string s:path)
@@ -33,3 +45,30 @@ string res = "";;
 }
 
 
+void
+Path::Merge(string cdPath){
+
+    if(cdPath[0] == '/'){
+        Set(cdPath);
+    } else {
+
+        stringstream check1(cdPath); 
+
+        string name; 
+
+        while(getline(check1,name, '/')) 
+        { 
+            if(name != ""){
+                if(name == ".."){
+                    if(!path.empty())
+                         path.pop_back();
+                } else {
+                    path.push_back(name);
+                }
+            }
+            
+        } 
+
+    }
+
+}
