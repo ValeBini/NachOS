@@ -226,3 +226,25 @@ Directory::PrintR(const char * name) const
     //printf("\n ------------------------------ \n Finishing Directory\n\n\n");
     delete hdr;
 }
+
+int
+Directory::PrintToBuffer(int size,char * buffer){
+
+    string s = "";
+    unsigned i;
+     for (i = 0; i < raw.tableSize; i++)
+        if (raw.table[i].inUse){
+            if(raw.table[i].isDirectory)
+                s+=string(raw.table[i].name) + "(D)\n"; 
+            if(!raw.table[i].isDirectory)
+                s+=string(raw.table[i].name) + "\n";
+        }
+
+    if((int)(s.size())>size) return -1;
+
+    strcpy(buffer,s.c_str());
+    
+    if(i==0) return 0;
+
+    return s.size();
+}

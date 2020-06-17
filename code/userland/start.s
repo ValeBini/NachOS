@@ -61,6 +61,14 @@ Exec:
         j       $31
         .end    Exec
 
+        .globl  Ls
+        .ent    Ls
+Ls:
+        addiu   $2, $0, SC_LS
+        syscall
+        j       $31
+        .end    Ls
+
         .globl  Join
         .ent    Join
 Join:

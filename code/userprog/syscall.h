@@ -125,7 +125,7 @@ int Read(char *buffer, int size, OpenFileId id);
 int Close(OpenFileId id);
 
 /// List cwd
-int Ls();
+int Ls(int size,char * data);
 /// Move current cwd
 int Chdir(char * path);
 

@@ -439,6 +439,43 @@ SyscallHandler(ExceptionType _et)
             machine->WriteRegister(2,0);    
             break;
         }
+
+        case SC_LS:{
+
+            int size = machine->ReadRegister(4);
+            int usrBufferAddr = machine->ReadRegister(5);
+
+            DEBUG('e', "`Ls` requested.\n");
+
+            // if (filenameAddr == 0){
+            //     DEBUG('e', "Error: address to filename string is null.\n");
+            //     machine->WriteRegister(2, -1);
+            //     break;
+            // }
+
+            
+            char buffer[size];
+            //funcion de prrint
+            string pathName = currentThread->GetPath();
+            Path *p = new Path(pathName);
+            unsigned dirSector = fileSystem->GoToPath(p);
+            Directory *dir = new Directory(NUM_DIR_ENTRIES);
+            OpenFile *dirFile = new OpenFile(dirSector, pathName.c_str());
+            dir->FetchFrom(dirFile);
+
+            int sizeW = dir->PrintToBuffer(size,buffer);
+
+            if(sizeW==-1){
+                DEBUG('e', "LS Buffer too small.\n");
+                machine->WriteRegister(2, -1);
+                break;
+            }
+            if(sizeW != 0) WriteBufferToUser(buffer, usrBufferAddr, sizeW);
+
+            machine->WriteRegister(2, sizeW);
+
+            break;
+        }
     #endif
 
         default:

@@ -123,13 +123,22 @@ main(void)
         } else {
             if(line[0] == 'c' && line[1] == 'd' && line[2] == '\0'){
                 if(Chdir(line + 3) != -1){
-                    WriteError("Metira no es error :) anda Ok!.", OUTPUT);
+                    Write("Cambio de directorio de trabajo.\n",34, OUTPUT);
                 }else{
                     WriteError("Path invalido.", OUTPUT);
                 }
+            }else if(line[0] == 'l' && line[1] == 's' && line[2] == '\0'){
+                char buffer[500];
+                int r = Ls(500,buffer);
+                buffer[r] = '\0';
+                if(r>0){
+                    Write(buffer, strlen(buffer), OUTPUT);
+                } else if (r == 0) {
+                    Write("Vacio.\n",8, OUTPUT);
+                } else {
+                    WriteError("Buffer chico.", OUTPUT);
+                }
             }else{
-
-                WriteError("Joacogil.", OUTPUT);
                 const SpaceId newProc = Exec(line, argv, 1);
                 Join(newProc);
             }

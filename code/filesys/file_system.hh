@@ -42,7 +42,8 @@
 #include "openfile_map.hh"
 #include "path.hh"
 
-class Directory;
+#include "directory.hh"
+// class Directory;
 static const unsigned NUM_DIR_ENTRIES = 20;
 //#endif
 
