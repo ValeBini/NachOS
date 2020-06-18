@@ -24,6 +24,7 @@
 #include "directory_entry.hh"
 #include "file_header.hh"
 #include "lib/utility.hh"
+#include "threads/system.hh"
 
 #include <stdio.h>
 #include <string.h>
@@ -138,8 +139,31 @@ Directory::Add(const char *name, int newSector, bool isDirectory)
             raw.table[i].sector = newSector;
             return true;
         }
+
+    Resize();
+    Add(name,newSector,isDirectory);
     return false;  // no space.  Fix when we have extensible files.
 }
+
+void
+Directory::Resize(){
+    DEBUG('R',"Directory resize requested. Directory path: %x\n",this);
+    unsigned newSize = raw.tableSize * 2;
+    DirectoryEntry * newTable = new DirectoryEntry[newSize];
+    memcpy(newTable,raw.table,raw.tableSize * sizeof(DirectoryEntry));
+    delete [] raw.table;
+    raw.table = newTable;
+    for (unsigned i = raw.tableSize; i < newSize; i++){
+        raw.table[i].inUse = false;
+        raw.table[i].isDirectory = false;
+    }
+    int oldSize = raw.tableSize;
+    raw.tableSize = newSize;
+
+    DEBUG('R',"Directory resize ended. OldSize %d newsize %d\n",oldSize,newSize);
+}
+
+
 
 /// Remove a file name from the directory.   Return true if successful;
 /// return false if the file is not in the directory.
@@ -200,13 +224,13 @@ Directory::GetRaw() const
 
 
 void
-Directory::PrintR(const char * name) const
+Directory::PrintR(const char * name,std::string path) const
 {
     FileHeader *hdr = new FileHeader;
 
     printf("\n\n\n ------------------------------ \nDirectory contents of %s:\n",name);
     List();
-    for (unsigned i = 0; i < raw.tableSize; i++)
+    for (unsigned i = 0; i < raw.tableSize; i++) 
         if (raw.table[i].inUse) {
             // printf("\nDirectory entry:\n"
             //        "    name: %s\n"
@@ -215,10 +239,15 @@ Directory::PrintR(const char * name) const
             hdr->FetchFrom(raw.table[i].sector);
             //hdr->Print(nullptr);
             if(raw.table[i].isDirectory){
-                Directory *dir = new Directory(NUM_DIR_ENTRIES);
+                
+                std::string newPath = path + string("/") + string(raw.table[i].name);
+                DirData* dirData = fileSystem->dirMap->GetDirData(newPath);
+                
+                Directory *dir = new Directory(dirData->GetSize());
                 OpenFile *dirFile = new OpenFile(raw.table[i].sector, raw.table[i].name);
                 dir->FetchFrom(dirFile);
-                dir->PrintR(raw.table[i].name);
+                dir->PrintR(raw.table[i].name, newPath);
+
                 delete dirFile;
                 delete dir;
             }
@@ -248,3 +277,4 @@ Directory::PrintToBuffer(int size,char * buffer){
 
     return s.size();
 }
+

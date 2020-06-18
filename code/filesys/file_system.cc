@@ -82,13 +82,14 @@ static const unsigned DIRECTORY_FILE_SIZE = sizeof (DirectoryEntry)
 /// * `format` -- should we initialize the disk?
 FileSystem::FileSystem(bool format)
 {
-    
+    dirMap = new DirMap();
     openFilesMap = new OpenFilesMap();
 
     DEBUG('f', "Initializing the file system.\n");
     if (format) {
         Bitmap     *freeMap = new Bitmap(NUM_SECTORS);
         Directory  *dir     = new Directory(NUM_DIR_ENTRIES);
+        dirMap->Update(std::string("/"),NUM_DIR_ENTRIES);
         FileHeader *mapH    = new FileHeader;
         FileHeader *dirH    = new FileHeader;
 
@@ -185,20 +186,32 @@ FileSystem::~FileSystem()
 unsigned 
 FileSystem::GoToPath(Path *path){
     
-    Directory *dir = new Directory(NUM_DIR_ENTRIES);
+
+    DirData* dirData;
+    dirData = dirMap->GetDirData(string("/"));
+    std::string pathName = string("");
+
+    Directory *dir = new Directory(dirData->GetSize());
     dir->FetchFrom(directoryFile);
     int tempSector = DIRECTORY_SECTOR;
     OpenFile * tempOpenFile ;
-    
+
+
     for(std::string nextDir : path->path){
+
         tempSector = dir->Find(nextDir.c_str());
         tempOpenFile = new OpenFile(tempSector,nextDir.c_str());
+
+        delete dir;
+                
+        pathName +=  (string("/") + nextDir);
+        dirData = dirMap->GetDirData(pathName);
+        Directory *dir = new Directory(dirData->GetSize());
         dir->FetchFrom(tempOpenFile);
 
         delete tempOpenFile;
     }
 
-    delete dir;
     return tempSector;
 }
 
@@ -209,7 +222,9 @@ FileSystem::Mkdir(std::string pathName, const char *name){
     Path * path = new Path(pathName);
 
     unsigned dirSector = GoToPath(path);
-    Directory *dir = new Directory(NUM_DIR_ENTRIES);
+    DirData * dirData;
+    dirData = dirMap->GetDirData(pathName);
+    Directory *dir = new Directory(dirData->GetSize());
     OpenFile *dirFile = new OpenFile(dirSector, pathName.c_str());
     dir->FetchFrom(dirFile);
     
@@ -235,6 +250,7 @@ FileSystem::Mkdir(std::string pathName, const char *name){
             h->WriteBack(sector);
             dir->WriteBack(dirFile);
             OpenFile * newDirFile = new OpenFile(sector, (pathName + std::string(name)).c_str());
+            dirMap->Update((pathName + std::string(name)).c_str(), NUM_DIR_ENTRIES);
             newDir->WriteBack(newDirFile);
             freeMap->WriteBack(freeMapFile);
             delete newDirFile;
@@ -258,7 +274,8 @@ FileSystem::Create(const char *name, unsigned initialSize, std::string pathName)
     Path * path = new Path(pathName);
 
     unsigned dirSector = GoToPath(path);
-    Directory *dir = new Directory(NUM_DIR_ENTRIES);
+    DirData * dirData = dirMap->GetDirData(path->FromPathToStr());
+    Directory *dir = new Directory(dirData->GetSize());
     OpenFile *dirFile = new OpenFile(dirSector, pathName.c_str()); 
 
     // SI ES EL RAIZ SE ABRE DENUEVOOOOOOOOOOO
@@ -320,7 +337,8 @@ FileSystem::Open(const char *name, std::string pathName)
     Path * path = new Path(pathName);
     
     unsigned dirSector = GoToPath(path);
-    Directory *dir = new Directory(NUM_DIR_ENTRIES);
+    DirData * dirData = dirMap->GetDirData(path->FromPathToStr());
+    Directory *dir = new Directory(dirData->GetSize());
     OpenFile *dirFile = new OpenFile(dirSector, pathName.c_str()); 
     OpenFile  *openFile = nullptr;
     // SI ES EL RAIZ SE ABRE DENUEVOOOOOOOOOOO
@@ -372,6 +390,8 @@ FileSystem::Remove(const char *name)
 
     if(openFilesMap->Remove(name)){
         DEBUG('F',"Efectivamenmte borrando %s.\n",name);
+        //DirData * dirData = dirMap->GetDirData(path->FromPathToStr());
+        //Directory *dir = new Directory(dirData->GetSize());
         Directory *dir = new Directory(NUM_DIR_ENTRIES);
         dir->FetchFrom(directoryFile);
         int sector = dir->Find(name);
@@ -405,16 +425,22 @@ bool
 FileSystem::CheckIfExists(std::string pathToCheck){
     Path * path = new Path(pathToCheck);
 
-    Directory *dir = new Directory(NUM_DIR_ENTRIES);
+    DirData * dirData = dirMap->GetDirData(string("/"));
+    Directory *dir = new Directory(dirData->GetSize());
     dir->FetchFrom(directoryFile);
-
+    
+    std::string pathName = string("");
     int tempSector = DIRECTORY_SECTOR;
     OpenFile * tempOpenFile ;
     
     for(std::string nextDir : path->path){
+        pathName += (string("/") + nextDir);
         tempSector = dir->FindDirectory(nextDir.c_str());
         if(tempSector == -1) return false;
         tempOpenFile = new OpenFile(tempSector,nextDir.c_str());
+
+        dirData = dirMap->GetDirData(pathName);
+        Directory *dir = new Directory(dirData->GetSize());
 
         dir->FetchFrom(tempOpenFile);
 
@@ -424,11 +450,14 @@ FileSystem::CheckIfExists(std::string pathToCheck){
     return true;
 }
 
+
 /// List all the files in the file system directory.
 void
 FileSystem::List()
 {
-    Directory *dir = new Directory(NUM_DIR_ENTRIES);
+
+    DirData * dirData = dirMap->GetDirData(string("/"));
+    Directory *dir = new Directory(dirData->GetSize());
 
     dir->FetchFrom(directoryFile);
     dir->List();
@@ -621,7 +650,8 @@ FileSystem::Print()
     FileHeader *bitH    = new FileHeader;
     FileHeader *dirH    = new FileHeader;
     Bitmap     *freeMap = new Bitmap(NUM_SECTORS);
-    Directory  *dir     = new Directory(NUM_DIR_ENTRIES);
+    DirData * dirData = dirMap->GetDirData(string("/"));
+    Directory  *dir     = new Directory(dirData->GetSize());
 
     printf("--------------------------------\n");
     bitH->FetchFrom(FREE_MAP_SECTOR);
@@ -638,7 +668,7 @@ FileSystem::Print()
     printf("--------------------------------\n");
     dir->FetchFrom(directoryFile);
     //dir->Print();
-    dir->PrintR("MainDirectory");
+    dir->PrintR("MainDirectory",string(""));
     printf("--------------------------------\n");
 
     delete bitH;

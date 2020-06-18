@@ -18,6 +18,7 @@
 #include "raw_directory.hh"
 #include "open_file.hh"
 #include "file_system.hh"
+// #include "threads/system.hh"
 
 
 /// The following class defines a UNIX-like “directory”.  Each entry in the
@@ -62,10 +63,11 @@ public:
     /// and their contents.
     void Print() const;
 
-    void PrintR(const char * name) const;
+    void PrintR(const char * name, std::string path) const;
 
     int PrintToBuffer(int size,char * buffer);
 
+    void Resize();
 
     /// Get the raw directory structure.
     ///

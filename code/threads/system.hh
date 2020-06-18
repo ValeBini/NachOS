@@ -18,6 +18,10 @@
 #include "machine/timer.hh"
 #include "userprog/synch_console.hh"
 
+#ifdef FILESYS
+#include "filesys/dir_map.hh"
+
+#endif
 class Scheduler;
 class FileSystem;
 

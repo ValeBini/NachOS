@@ -118,6 +118,7 @@ Initialize(int argc, char **argv)
 #ifdef FILESYS_NEEDED
     bool format = false;  // Format disk.
 #endif
+
 #ifdef NETWORK
     double rely = 1;  // Network reliability.
     int netname = 0;  // UNIX socket name.
@@ -208,7 +209,6 @@ Initialize(int argc, char **argv)
 #endif
 
 #endif
-
 #ifdef FILESYS
     synchDisk = new SynchDisk("DISK");
 #endif

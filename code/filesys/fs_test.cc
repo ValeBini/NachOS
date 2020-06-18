@@ -315,11 +315,11 @@ PerformanceTest()
 
     string l1 = "/";
     string l2 = "/level1/";
-    fileSystem->Mkdir(l1,"level1");
+    fileSystem->Mkdir(l1,"level1");/*
     fileSystem->Mkdir(l2,"level2");
     fileSystem->Mkdir(l2,"level2.1");
     fileSystem->Create("sort",1111,l1);
-    fileSystem->Create("sort",1111,l2);
+    fileSystem->Create("sort",1111,l2);*/
     
   
 #else 

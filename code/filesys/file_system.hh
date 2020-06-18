@@ -42,9 +42,11 @@
 #include "openfile_map.hh"
 #include "path.hh"
 
+#include "dir_map.hh"
+class DirMap;
 #include "directory.hh"
 // class Directory;
-static const unsigned NUM_DIR_ENTRIES = 20;
+static const unsigned NUM_DIR_ENTRIES = 2;
 //#endif
 
 class OpenFilesMap;
@@ -121,6 +123,8 @@ public:
     bool CheckIfExists(std::string pathToCheck);
 
     OpenFilesMap * openFilesMap;
+    
+    DirMap * dirMap;
 
     OpenFile *freeMapFile;  ///< Bit map of free disk blocks, represented as a
 
