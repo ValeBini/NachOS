@@ -66,7 +66,7 @@ public:
 
     int PrintToBuffer(int size,char * buffer);
 
-
+    void Resize();
     /// Get the raw directory structure.
     ///
     /// NOTE: this should only be used by routines that operating on the file

@@ -36,13 +36,13 @@
 /// * `size` is the number of entries in the directory.
 Directory::Directory(unsigned size)
 {
-    ASSERT(size > 0);
-    raw.table = new DirectoryEntry [size];
-    raw.tableSize = size;
-    for (unsigned i = 0; i < raw.tableSize; i++){
-        raw.table[i].inUse = false;
-        raw.table[i].isDirectory = false;
-    }
+    // ASSERT(size > 0);
+    raw.table = new DirectoryEntry[1];
+    raw.tableSize = 1;
+    
+    raw.table[0].inUse = false;
+    raw.table[0].isDirectory = false;
+    
 }
 
 /// De-allocate directory data structure.
@@ -58,9 +58,26 @@ void
 Directory::FetchFrom(OpenFile *file)
 {
     ASSERT(file != nullptr);
-    file->ReadAt((char *) raw.table,
-                 raw.tableSize * sizeof (DirectoryEntry), 0);
+
+    if(raw.table != nullptr)
+        delete raw.table;
+
+    file->ReadAt((char *) (&raw.tableSize),sizeof (unsigned), 0);
+
+    DEBUG('S',"Size : %d \n",raw.tableSize);
+
+    raw.table = new DirectoryEntry [raw.tableSize];
+
+    for (unsigned i = 0; i < raw.tableSize; i++){
+        raw.table[i].inUse = false;
+        raw.table[i].isDirectory = false;
+    }
+    
+    file->ReadAt((char *) raw.table, raw.tableSize * sizeof (DirectoryEntry), sizeof (unsigned));
+    
 }
+
+
 
 /// Write any modifications to the directory back to disk.
 ///
@@ -69,8 +86,10 @@ void
 Directory::WriteBack(OpenFile *file)
 {
     ASSERT(file != nullptr);
+    DEBUG('S',"Size antes de escribirlo : %d \n",raw.tableSize);
+    file->WriteAt((char *) (&raw.tableSize), sizeof(unsigned), 0);
     file->WriteAt((char *) raw.table,
-                  raw.tableSize * sizeof (DirectoryEntry), 0);
+                  raw.tableSize * sizeof (DirectoryEntry), sizeof (unsigned));
 }
 
 /// Look up file name in directory, and return its location in the table of
@@ -116,17 +135,12 @@ Directory::FindDirectory(const char *name)
     return -1;
 }
 
-/// Add a file into the directory.  Return true if successful; return false
-/// if the file name is already in the directory, or if the directory is
-/// completely full, and has no more space for additional file names.
-///
-/// * `name` is the name of the file being added.
-/// * `newSector` is the disk sector containing the added file's header.
+
 bool
 Directory::Add(const char *name, int newSector, bool isDirectory)
 {
     ASSERT(name != nullptr);
-
+    DEBUG('R',"Directory add requested. Directory path: %x name: %s\n",this,name);
     if (FindIndex(name) != -1)
         return false;
 
@@ -136,10 +150,34 @@ Directory::Add(const char *name, int newSector, bool isDirectory)
             raw.table[i].isDirectory = isDirectory;
             strncpy(raw.table[i].name, name, FILE_NAME_MAX_LEN);
             raw.table[i].sector = newSector;
+            DEBUG('R',"Directory add finished.\n");
             return true;
         }
-    return false;  // no space.  Fix when we have extensible files.
+
+    DEBUG('R',"Directory add need to resize.\n");
+    Resize();
+    return Add(name,newSector,isDirectory);
 }
+
+void
+Directory::Resize(){
+    DEBUG('R',"Directory resize requested. Directory path: %x\n",this);
+    unsigned newSize = raw.tableSize * 2;
+    DirectoryEntry * newTable = new DirectoryEntry[newSize];
+    memcpy(newTable,raw.table,raw.tableSize * sizeof(DirectoryEntry));
+    delete [] raw.table;
+    raw.table = newTable;
+    for (unsigned i = raw.tableSize; i < newSize; i++){
+        raw.table[i].inUse = false;
+        raw.table[i].isDirectory = false;
+    }
+    int oldSize = raw.tableSize;
+    raw.tableSize = newSize;
+
+    DEBUG('R',"Directory resize ended. OldSize %d newsize %d\n",oldSize,newSize);
+}
+
+
 
 /// Remove a file name from the directory.   Return true if successful;
 /// return false if the file is not in the directory.
@@ -168,7 +206,7 @@ Directory::List() const
             if(!raw.table[i].isDirectory)
             printf("%s\n", raw.table[i].name);
             
-            }
+        }
 }
 
 

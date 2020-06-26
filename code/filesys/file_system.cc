@@ -282,17 +282,22 @@ FileSystem::Create(const char *name, unsigned initialSize, std::string pathName)
           // Find a sector to hold the file header.
         if (sector == -1)
             success = false;  // No free block for file header.
-        else if (!dir->Add(name, sector))
+        else if (!dir->Add(name, sector)){
             success = false;  // No space in directory.
+            DEBUG('R',"ERRORRRRRRRRRRRR\n");
+        }
         else {
             FileHeader *h = new FileHeader;
             success = h->Allocate(freeMap, initialSize);
               // Fails if no space on disk for data.
             if (success) {
                 // Everything worked, flush all changes back to disk.
+                 DEBUG('R',"Escribiendo en disco \n");
                 h->WriteBack(sector);
                 dir->WriteBack(dirFile);
                 freeMap->WriteBack(freeMapFile);
+            } else {
+                DEBUG('R',"Error al Allocate \n");
             }
             delete h;
         }
