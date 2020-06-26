@@ -171,6 +171,7 @@ Directory::List() const
             }
 }
 
+
 /// List all the file names in the directory, their `FileHeader` locations,
 /// and the contents of each file.  For debugging.
 void
