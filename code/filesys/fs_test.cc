@@ -317,7 +317,9 @@ PerformanceTest()
     string l2 = "/level1/";
     fileSystem->Mkdir(l1,"level1");
     fileSystem->Mkdir(l2,"level2");
-    fileSystem->Mkdir(l2,"level2.1");
+    fileSystem->Mkdir(l2,"level21");
+    fileSystem->Mkdir(l2,"level3");
+    fileSystem->Mkdir(l2,"level31");
     //fileSystem->Create("sort",1111,l1);
     //fileSystem->Create("sort",1111,l2);
     

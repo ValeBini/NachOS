@@ -117,7 +117,8 @@ FILESYS_HDR = filesys/directory.hh       \
               machine/disk.hh            \
               filesys/reader_writer.hh   \
               filesys/openfile_map.hh    \
-              filesys/path.hh
+              filesys/path.hh \
+              filesys/dir_map.hh
 
 FILESYS_SRC = filesys/directory.cc   \
               filesys/file_header.cc \
@@ -128,7 +129,8 @@ FILESYS_SRC = filesys/directory.cc   \
               machine/disk.cc        \
               filesys/reader_writer.cc \
               filesys/openfile_map.cc  \
-              filesys/path.cc
+              filesys/path.cc \
+              filesys/dir_map.cc
 
 NETWORK_HDR = network/post.hh \
               machine/network.hh

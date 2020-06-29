@@ -24,10 +24,13 @@
 #include "directory_entry.hh"
 #include "file_header.hh"
 #include "lib/utility.hh"
+#include "threads/system.hh"
+//#include "file_system.hh"
 
 #include <stdio.h>
 #include <string.h>
 
+class FileSystem;
 
 /// Initialize a directory; initially, the directory is completely empty.  If
 /// the disk is being formatted, an empty directory is all we need, but
@@ -236,6 +239,29 @@ Directory::GetRaw() const
 {
     return &raw;
 }
+
+void
+Directory::InitDirMap(std::string name){
+
+    FileHeader *hdr = new FileHeader; 
+    if (name == "") fileSystem->dirMap->Add(string("/"));
+    else fileSystem->dirMap->Add(name);
+    for (unsigned i = 0; i < raw.tableSize; i++)
+        if (raw.table[i].inUse) {
+            hdr->FetchFrom(raw.table[i].sector);
+            if(raw.table[i].isDirectory){
+                Directory *dir = new Directory(NUM_DIR_ENTRIES);
+                OpenFile *dirFile = new OpenFile(raw.table[i].sector, raw.table[i].name);
+                dir->FetchFrom(dirFile);
+                dir->InitDirMap(name + "/" + raw.table[i].name);
+                delete dirFile;
+                delete dir;
+            }
+        }
+
+    delete hdr;
+}
+
 
 
 void

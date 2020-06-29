@@ -43,11 +43,13 @@
 #include "path.hh"
 
 #include "directory.hh"
+#include "dir_map.hh"
 // class Directory;
 static const unsigned NUM_DIR_ENTRIES = 20;
 //#endif
 
 class OpenFilesMap;
+class DirMap;
 
 #ifdef FILESYS_STUB  // Temporarily implement file system calls as calls to
                      // UNIX, until the real file system implementation is
@@ -129,6 +131,8 @@ public:
 
     unsigned GoToPath(Path *path);
     // #endif
+    DirMap *dirMap;
+    void InitDirMap();
 private:
                             ///< file.
     OpenFile *directoryFile;  ///< “Root” directory -- list of file names,

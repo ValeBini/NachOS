@@ -18,7 +18,9 @@
 #include "raw_directory.hh"
 #include "open_file.hh"
 #include "file_system.hh"
+//#include "dir_map.hh"
 
+class DirMap;
 
 /// The following class defines a UNIX-like “directory”.  Each entry in the
 /// directory describes a file, and where to find it on disk.
@@ -67,6 +69,9 @@ public:
     int PrintToBuffer(int size,char * buffer);
 
     void Resize();
+
+    void InitDirMap(std::string name);
+
     /// Get the raw directory structure.
     ///
     /// NOTE: this should only be used by routines that operating on the file

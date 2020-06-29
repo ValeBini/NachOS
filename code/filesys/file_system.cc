@@ -147,12 +147,24 @@ FileSystem::FileSystem(bool format)
         freeMapFile   = new OpenFile(FREE_MAP_SECTOR);
         directoryFile = new OpenFile(DIRECTORY_SECTOR);
     }
+
+    dirMap = new DirMap();
 }
+
+void 
+FileSystem::InitDirMap(){
+    Directory *root = new Directory(NUM_DIR_ENTRIES);
+    root->FetchFrom(directoryFile);
+    root->InitDirMap("");
+}
+
+
 
 FileSystem::~FileSystem()
 {
     delete freeMapFile;
     delete directoryFile;
+    delete dirMap;
 }
 
 /// Create a file in the Nachos file system (similar to UNIX `create`).
@@ -203,6 +215,7 @@ FileSystem::GoToPath(Path *path){
 }
 
 
+
 bool
 FileSystem::Mkdir(std::string pathName, const char *name){
 
@@ -235,6 +248,7 @@ FileSystem::Mkdir(std::string pathName, const char *name){
             h->WriteBack(sector);
             dir->WriteBack(dirFile);
             OpenFile * newDirFile = new OpenFile(sector, (pathName + std::string(name)).c_str());
+            dirMap->Add(pathName + std::string(name));
             newDir->WriteBack(newDirFile);
             freeMap->WriteBack(freeMapFile);
             delete newDirFile;
@@ -284,7 +298,7 @@ FileSystem::Create(const char *name, unsigned initialSize, std::string pathName)
             success = false;  // No free block for file header.
         else if (!dir->Add(name, sector)){
             success = false;  // No space in directory.
-            DEBUG('R',"ERRORRRRRRRRRRRR\n");
+            DEBUG('R',"Create: Add error\n");
         }
         else {
             FileHeader *h = new FileHeader;
@@ -368,18 +382,41 @@ FileSystem::Open(const char *name, std::string pathName)
 /// file system.
 ///
 /// * `name` is the text name of the file to be removed.
+
 bool
 FileSystem::Remove(const char *name)
 {
+
+    
     ASSERT(name != nullptr);
 
+    int last = 0;
+    string strName = "";
+    string pathToDir = "";
+
+    if(name[0]=='/'){
+        for(int i = 0; name[i]; i++) if(name[i] == '/') last = i;
+        for(int i = last+1; name[i]; i++) strName += name[i];
+        for(int i = 0; i<last; i++) pathToDir += name[i];
+    } else {
+        pathToDir = "/";
+        strName = string(name);
+    }
+
+    char * nameFile = new char[strName.size()];
+    strcpy(nameFile, strName.c_str());
+    Path* dirPath = new Path(pathToDir);
+    OpenFile* parentDir = new OpenFile((int)GoToPath(dirPath));
+
+
+    
     openFilesMap->mapLock->Acquire();
 
-    if(openFilesMap->Remove(name)){
-        DEBUG('F',"Efectivamenmte borrando %s.\n",name);
+    if(openFilesMap->Remove(nameFile)){
+        DEBUG('F',"Efectivamenmte borrando %s.\n",nameFile);
         Directory *dir = new Directory(NUM_DIR_ENTRIES);
-        dir->FetchFrom(directoryFile);
-        int sector = dir->Find(name);
+        dir->FetchFrom(parentDir);
+        int sector = dir->Find(nameFile);
         if (sector == -1) {
         delete dir;
         openFilesMap->mapLock->Release();
@@ -393,10 +430,10 @@ FileSystem::Remove(const char *name)
 
         fileH->Deallocate(freeMap);  // Remove data blocks.
         freeMap->Clear(sector);      // Remove header block.
-        dir->Remove(name);
+        dir->Remove(nameFile);
 
         freeMap->WriteBack(freeMapFile);  // Flush to disk.
-        dir->WriteBack(directoryFile);    // Flush to disk.
+        dir->WriteBack(parentDir);    // Flush to disk.
         delete fileH;
         delete dir;
         delete freeMap;
