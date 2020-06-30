@@ -1,7 +1,7 @@
 #include "dir_map.hh"
 
-DirData::DirData(std::string dirName){
-    dirName = string("DirLock ") + dirName;
+DirData::DirData(unsigned sector){
+    std::string dirName = string("DirLock ") + std::to_string(sector);
     lockName = new char [dirName.size()];
     strcpy(lockName, dirName.c_str());
     lock = new Lock(lockName);
@@ -30,20 +30,20 @@ DirMap::~DirMap(){
 }
 
 DirMap::DirMap(){
-    dirTable = new std::map<std::string,DirData*>;
+    dirTable = new std::map<unsigned,DirData*>;
 }
 
 DirData *
-DirMap::GetDirData(std::string dirName){
-    if(!dirTable->count(dirName))
+DirMap::GetDirData(unsigned sector){
+    if(!dirTable->count(sector))
         return nullptr;
-    return (*dirTable)[dirName];
+    return (*dirTable)[sector];
 }
 
 void
-DirMap::Add(std::string dirName){
-    ASSERT(!dirTable->count(dirName));
-    DirData * data = new DirData(dirName);
-    dirTable->insert(std::make_pair(dirName,data));
+DirMap::Add(unsigned sector){
+    ASSERT(!dirTable->count(sector));
+    DirData * data = new DirData(sector);
+    dirTable->insert(std::make_pair(sector,data));
 }
 

@@ -241,11 +241,10 @@ Directory::GetRaw() const
 }
 
 void
-Directory::InitDirMap(std::string name){
+Directory::InitDirMap(std::string name, unsigned sector){
 
     FileHeader *hdr = new FileHeader; 
-    if (name == "") fileSystem->dirMap->Add(string("/"));
-    else fileSystem->dirMap->Add(name);
+    fileSystem->dirMap->Add(sector);
     for (unsigned i = 0; i < raw.tableSize; i++)
         if (raw.table[i].inUse) {
             hdr->FetchFrom(raw.table[i].sector);
@@ -253,7 +252,7 @@ Directory::InitDirMap(std::string name){
                 Directory *dir = new Directory(NUM_DIR_ENTRIES);
                 OpenFile *dirFile = new OpenFile(raw.table[i].sector, raw.table[i].name);
                 dir->FetchFrom(dirFile);
-                dir->InitDirMap(name + "/" + raw.table[i].name);
+                dir->InitDirMap(name + "/" + raw.table[i].name,raw.table[i].sector);
                 delete dirFile;
                 delete dir;
             }

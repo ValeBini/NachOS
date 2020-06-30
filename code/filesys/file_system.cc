@@ -155,7 +155,7 @@ void
 FileSystem::InitDirMap(){
     Directory *root = new Directory(NUM_DIR_ENTRIES);
     root->FetchFrom(directoryFile);
-    root->InitDirMap("");
+    root->InitDirMap("",DIRECTORY_SECTOR);
 }
 
 
@@ -198,18 +198,30 @@ unsigned
 FileSystem::GoToPath(Path *path){
     
     Directory *dir = new Directory(NUM_DIR_ENTRIES);
-    dir->FetchFrom(directoryFile);
+    
     int tempSector = DIRECTORY_SECTOR;
+    int oldSector;
     OpenFile * tempOpenFile ;
+    //----------------------------------------
+    dirMap->GetDirData(tempSector)->AcquireL();
+    //----------------------------------------
+    dir->FetchFrom(directoryFile);
     
     for(std::string nextDir : path->path){
+        oldSector = tempSector;
         tempSector = dir->Find(nextDir.c_str());
+        //----------------------------------------
+        dirMap->GetDirData(oldSector)->ReleaseL();
+        dirMap->GetDirData(tempSector)->AcquireL();;
+        //----------------------------------------
         tempOpenFile = new OpenFile(tempSector,nextDir.c_str());
         dir->FetchFrom(tempOpenFile);
 
         delete tempOpenFile;
     }
-
+    //----------------------------------------
+    dirMap->GetDirData(tempSector)->ReleaseL();
+    //----------------------------------------
     delete dir;
     return tempSector;
 }
@@ -222,6 +234,9 @@ FileSystem::Mkdir(std::string pathName, const char *name){
     Path * path = new Path(pathName);
 
     unsigned dirSector = GoToPath(path);
+    //----------------------------------------
+    dirMap->GetDirData(dirSector)->AcquireL();
+    //----------------------------------------
     Directory *dir = new Directory(NUM_DIR_ENTRIES);
     OpenFile *dirFile = new OpenFile(dirSector, pathName.c_str());
     dir->FetchFrom(dirFile);
@@ -248,15 +263,19 @@ FileSystem::Mkdir(std::string pathName, const char *name){
             h->WriteBack(sector);
             dir->WriteBack(dirFile);
             OpenFile * newDirFile = new OpenFile(sector, (pathName + std::string(name)).c_str());
-            dirMap->Add(pathName + std::string(name));
+            dirMap->Add(sector);
             newDir->WriteBack(newDirFile);
             freeMap->WriteBack(freeMapFile);
             delete newDirFile;
         }
         delete h;
     }
-    delete freeMap;
+    
+    //----------------------------------------
+    dirMap->GetDirData(dirSector)->ReleaseL();
+    //----------------------------------------
 
+    delete freeMap;
     delete dirFile;
     delete dir;
     delete newDir;
@@ -272,6 +291,9 @@ FileSystem::Create(const char *name, unsigned initialSize, std::string pathName)
     Path * path = new Path(pathName);
 
     unsigned dirSector = GoToPath(path);
+    //----------------------------------------
+    dirMap->GetDirData(dirSector)->AcquireL();
+    //----------------------------------------
     Directory *dir = new Directory(NUM_DIR_ENTRIES);
     OpenFile *dirFile = new OpenFile(dirSector, pathName.c_str()); 
 
@@ -317,6 +339,9 @@ FileSystem::Create(const char *name, unsigned initialSize, std::string pathName)
         }
         delete freeMap;
     }
+    //----------------------------------------
+    dirMap->GetDirData(dirSector)->ReleaseL();
+    //----------------------------------------
     delete dir;
     delete dirFile;
     return success;
@@ -339,6 +364,9 @@ FileSystem::Open(const char *name, std::string pathName)
     Path * path = new Path(pathName);
     
     unsigned dirSector = GoToPath(path);
+    //----------------------------------------
+    dirMap->GetDirData(dirSector)->AcquireL();
+    //----------------------------------------
     Directory *dir = new Directory(NUM_DIR_ENTRIES);
     OpenFile *dirFile = new OpenFile(dirSector, pathName.c_str()); 
     OpenFile  *openFile = nullptr;
@@ -350,6 +378,10 @@ FileSystem::Open(const char *name, std::string pathName)
     if (sector >= 0 && openFilesMap->checkNotRemoved((pathName+string("/")+string(name)).c_str()))
     //if (sector >= 0)
        openFile = new OpenFile(sector,(pathName+string("/")+string(name)).c_str());  // `name` was found in directory.
+    
+    //----------------------------------------
+    dirMap->GetDirData(dirSector)->ReleaseL();
+    //----------------------------------------
     delete dir;
     return openFile;  // Return null if not found.
 
@@ -406,7 +438,11 @@ FileSystem::Remove(const char *name)
     char * nameFile = new char[strName.size()];
     strcpy(nameFile, strName.c_str());
     Path* dirPath = new Path(pathToDir);
-    OpenFile* parentDir = new OpenFile((int)GoToPath(dirPath));
+    int dirSector = GoToPath(dirPath);
+    //----------------------------------------
+    dirMap->GetDirData(dirSector)->AcquireL();
+    //---------------------------------------- 
+    OpenFile* parentDir = new OpenFile(dirSector,dirPath->FromPathToStr().c_str());
 
 
     
@@ -420,6 +456,9 @@ FileSystem::Remove(const char *name)
         if (sector == -1) {
         delete dir;
         openFilesMap->mapLock->Release();
+        //----------------------------------------
+        dirMap->GetDirData(dirSector)->ReleaseL();
+         //----------------------------------------
         return false;  // file not found
         }
         FileHeader *fileH = new FileHeader;
@@ -434,10 +473,15 @@ FileSystem::Remove(const char *name)
 
         freeMap->WriteBack(freeMapFile);  // Flush to disk.
         dir->WriteBack(parentDir);    // Flush to disk.
+
         delete fileH;
         delete dir;
         delete freeMap;
-    }
+    }       
+    
+    //----------------------------------------
+    dirMap->GetDirData(dirSector)->ReleaseL();
+    //----------------------------------------
     
     openFilesMap->mapLock->Release();
     return true;
@@ -448,20 +492,38 @@ FileSystem::CheckIfExists(std::string pathToCheck){
     Path * path = new Path(pathToCheck);
 
     Directory *dir = new Directory(NUM_DIR_ENTRIES);
+    int tempSector = DIRECTORY_SECTOR;
+    int oldSector;
+    //----------------------------------------
+    dirMap->GetDirData(tempSector)->AcquireL();
+    //----------------------------------------
     dir->FetchFrom(directoryFile);
 
-    int tempSector = DIRECTORY_SECTOR;
     OpenFile * tempOpenFile ;
     
     for(std::string nextDir : path->path){
+        oldSector = tempSector; 
         tempSector = dir->FindDirectory(nextDir.c_str());
-        if(tempSector == -1) return false;
+
+        //----------------------------------------
+        dirMap->GetDirData(oldSector)->ReleaseL();
+        dirMap->GetDirData(tempSector)->AcquireL();
+        //----------------------------------------
+
+        if(tempSector == -1) {
+            dirMap->GetDirData(tempSector)->ReleaseL();
+            return false;
+        }
         tempOpenFile = new OpenFile(tempSector,nextDir.c_str());
 
         dir->FetchFrom(tempOpenFile);
 
         delete tempOpenFile;
     }
+
+    //----------------------------------------
+    dirMap->GetDirData(tempSector)->ReleaseL();
+    //----------------------------------------
 
     return true;
 }
@@ -471,11 +533,18 @@ void
 FileSystem::List()
 {
     Directory *dir = new Directory(NUM_DIR_ENTRIES);
-
+    //----------------------------------------
+    dirMap->GetDirData(DIRECTORY_SECTOR)->AcquireL();
+    //----------------------------------------
     dir->FetchFrom(directoryFile);
     dir->List();
+    //----------------------------------------
+    dirMap->GetDirData(DIRECTORY_SECTOR)->ReleaseL();
+    //----------------------------------------
+    
     delete dir;
 }
+
 
 static bool
 AddToShadowBitmap(unsigned sector, Bitmap *map)
@@ -678,9 +747,15 @@ FileSystem::Print()
     freeMap->Print();
 
     printf("--------------------------------\n");
+    //----------------------------------------
+    dirMap->GetDirData(DIRECTORY_SECTOR)->AcquireL();
+    //----------------------------------------
     dir->FetchFrom(directoryFile);
     //dir->Print();
     dir->PrintR("MainDirectory");
+    //----------------------------------------
+    dirMap->GetDirData(DIRECTORY_SECTOR)->ReleaseL();
+    //----------------------------------------
     printf("--------------------------------\n");
 
     delete bitH;

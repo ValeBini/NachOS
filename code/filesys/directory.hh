@@ -70,7 +70,7 @@ public:
 
     void Resize();
 
-    void InitDirMap(std::string name);
+    void InitDirMap(std::string name, unsigned sector);
 
     /// Get the raw directory structure.
     ///

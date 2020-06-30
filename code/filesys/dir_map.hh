@@ -9,7 +9,7 @@ class Lock;
 
 class DirData {
     public:
-        DirData(std::string dirName);
+        DirData(unsigned sector);
         ~DirData();
         
         void AcquireL();
@@ -24,13 +24,13 @@ class DirData {
 class DirMap{
 
     private:
-        std::map<std::string,DirData*> * dirTable;
+        std::map<unsigned,DirData*> * dirTable;
 
     public:
         DirMap();
         ~DirMap();
-        DirData * GetDirData(string path);
-        void Add(std::string dirName);
+        DirData * GetDirData(unsigned sector);
+        void Add(unsigned sector);
 };
 
 #endif
